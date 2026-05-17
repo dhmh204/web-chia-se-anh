@@ -1,0 +1,181 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum NenTangXacThuc {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
+enum VaiTro {
+  ADMIN
+  THO_ANH
+  KHACH_HANG
+}
+
+enum TrangThaiDuAn {
+  MOI         @map("mới")
+  DANG_CHON   @map("đang chọn")
+  DANG_SUA    @map("đang sửa")
+  HOAN_THANH  @map("hoàn thành")
+}
+
+enum LoaiAlb {
+  ANH_GOC @map("ảnh gốc")
+  HAU_KY @map("hậu kỳ")
+  CUOI_CUNG @map("final")
+}
+
+enum TrangThaiPhanHoi {
+  CHUA_XU_LY @map("chưa xử lý")
+  DA_XU_LY @map("đã xử lý")
+
+}
+
+model NguoiDung {
+  ma_nguoi_dung     String   @id @default(uuid())
+  ho_va_ten         String
+  email             String   @unique
+  so_dien_thoai     String?
+  mat_khau_hash     String?
+  nen_tang_xac_thuc NenTangXacThuc @default(LOCAL)
+  vai_tro           VaiTro  @default(KHACH_HANG)
+
+  du_an_tao         Duan[]   @relation("NguoiTaoDuAn")
+  su_phan_cong      SuPhanCong[] 
+  albums         Album[]  @relation("NguoiTaoAlbum")
+  phan_hoi PhanHoi[]
+
+  @@map("NGUOIDUNG") 
+}
+
+model Duan {
+  ma_du_an       String   @id @default(uuid())
+  ten_du_an      String
+  ngay_chup      DateTime
+  ma_chia_se     String   @unique
+  trang_thai     TrangThaiDuAn @default(MOI)
+  mat_khau       String?
+  link_anh_bia   String?
+  nguoi_tao      String
+  ngay_tao       DateTime @default(now())
+
+  creator        NguoiDung @relation("NguoiTaoDuAn", fields: [nguoi_tao], references: [ma_nguoi_dung], onDelete: Cascade)
+  albums         Album[]
+  su_phan_cong   SuPhanCong[]
+
+  @@map("DUAN")
+}
+
+model SuPhanCong {
+  ma_nguoi_dung String
+  ma_du_an      String
+  ngay_tham_gia DateTime @default(now())
+
+  nguoi_dung    NguoiDung @relation(fields: [ma_nguoi_dung], references: [ma_nguoi_dung], onDelete: Cascade)
+  du_an         Duan      @relation(fields: [ma_du_an], references: [ma_du_an], onDelete: Cascade)
+
+  @@id([ma_nguoi_dung, ma_du_an])
+  @@map("SUPHANCONG")
+}
+
+model Album {
+  ma_album        String   @id @default(uuid())
+  ma_du_an        String
+  ten_alb         String
+  loai_alb        LoaiAlb @default(ANH_GOC)
+  quyen_download  Boolean  @default(false)
+  nguoi_tao       String
+  ngay_tao        DateTime @default(now())
+
+  creator        NguoiDung @relation("NguoiTaoAlbum", fields: [nguoi_tao], references: [ma_nguoi_dung], onDelete: Cascade)
+  du_an           Duan     @relation(fields: [ma_du_an], references: [ma_du_an], onDelete: Cascade)
+  hinh_anh        HinhAnh[]
+  khuon_mat        KhuonMat[]
+
+
+  @@map("ALBUM")
+}
+
+model HinhAnh {
+  ma_hinh_anh String   @id @default(uuid())
+  ma_album    String
+  url_anh     String  
+  bi_mo       Boolean  @default(false)
+  ngay_tao    DateTime @default(now())
+
+  album       Album    @relation(fields: [ma_album], references: [ma_album], onDelete: Cascade)
+  phan_hoi PhanHoi[]
+  chi_tiet_nhan ChiTietNhan[]
+  khuon_mat_trong_anh KhuonMatTrongAnh[]
+  @@index([ma_album]) 
+  @@map("HINHANH")
+}
+
+model PhanHoi{
+  ma_phan_hoi String   @id @default(uuid())
+  ma_hinh_anh String 
+  ma_tho_anh String? 
+  nguoi_binh_luan String @default("Khách") 
+  phan_hoi String @db.Text
+  ngay_tao        DateTime @default(now())
+  toa_do_X Decimal @db.Decimal(5,2)
+  toa_do_Y Decimal @db.Decimal(5,2)
+  phan_tram_chieu_rong Decimal @db.Decimal(5,2)
+  phan_tram_chieu_cao Decimal @db.Decimal(5,2)
+  trang_thai TrangThaiPhanHoi @default(CHUA_XU_LY)
+
+  tho_anh NguoiDung? @relation(fields: [ma_tho_anh], references: [ma_nguoi_dung])
+  hinh_anh HinhAnh @relation(fields: [ma_hinh_anh], references: [ma_hinh_anh], onDelete: Cascade)
+  @@index([ma_hinh_anh]) 
+  @@map("PHANHOI")
+
+}
+
+
+model KhuonMat{
+ ma_nhom String   @id @default(uuid())
+ ma_album String 
+ ten_nhan_vat String @default("Người lạ")
+ anh_dai_dien String 
+ khuon_mat_trong_anh KhuonMatTrongAnh[]
+ album Album @relation(fields: [ma_album], references: [ma_album], onDelete: Cascade)
+
+ @@map("KHUONMAT")
+}
+
+model KhuonMatTrongAnh{
+  ma_khuon_mat String   @id @default(uuid())
+  ma_hinh_anh String
+  ma_nhom String 
+  vector_khuon_mat Float[]
+
+  hinh_anh HinhAnh @relation(fields: [ma_hinh_anh], references: [ma_hinh_anh], onDelete: Cascade)
+  nhom KhuonMat @relation(fields: [ma_nhom], references: [ma_nhom], onDelete: Cascade)
+
+@@map("KHUONMATTRONGANH")
+
+}
+
+model Nhan{
+  ma_nhan String @id @default(uuid())
+  ten_nhan String 
+  chi_tiet_nhan ChiTietNhan[]
+  @@map("NHAN")
+}
+
+model ChiTietNhan{
+  ma_hinh_anh String 
+  ma_nhan String
+  ngay_tao  DateTime @default(now())
+   hinh_anh    HinhAnh @relation(fields: [ma_hinh_anh], references: [ma_hinh_anh], onDelete: Cascade)
+  nhan         Nhan      @relation(fields: [ma_nhan], references: [ma_nhan], onDelete: Cascade)
+  @@id([ma_hinh_anh, ma_nhan])
+  @@map("CHITIETNHAN")
+}
