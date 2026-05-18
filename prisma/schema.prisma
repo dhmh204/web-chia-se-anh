@@ -7,12 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum NenTangXacThuc {
-  LOCAL
-  GOOGLE
-  FACEBOOK
-}
-
 enum VaiTro {
   ADMIN
   THO_ANH
@@ -43,8 +37,7 @@ model NguoiDung {
   ho_va_ten         String
   email             String   @unique
   so_dien_thoai     String?
-  mat_khau_hash     String?
-  nen_tang_xac_thuc NenTangXacThuc @default(LOCAL)
+  mat_khau_hash     String
   vai_tro           VaiTro  @default(KHACH_HANG)
 
   du_an_tao         Duan[]   @relation("NguoiTaoDuAn")
