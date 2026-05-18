@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { signIn } from "next-auth/react";
 
 const prisma = new PrismaClient();
 
@@ -51,12 +52,12 @@ const handler = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-      token.ma_nguoi_dung = user.id;
-      token.vai_tro = user.role;
-  }
+        token.ma_nguoi_dung = user.id;
+        token.vai_tro = user.role;
+      }
 
-  return token;
-    };
+      return token;
+    },
     async session({ session, token }) {
       if (session.user) {
         // @ts-ignore
@@ -66,6 +67,9 @@ const handler = NextAuth({
       }
       return session;
     },
+  },
+  pages: {
+    signIn: '/login'
   },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
