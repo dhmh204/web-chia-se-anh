@@ -15,16 +15,13 @@ const DashboardLayoutShell = ({
   role,
 }: DashboardLayoutShellProps) => {
   return (
-    <div>
-      <main>
-        <div>
-          <DashboardSidebar  role={role} />
-        </div>
-        <div>
-          {/* <DashboardHeader/> */}
-        </div>
-      </main>
-    </div>
+    <main className="min-h-[100vh] grid grid-cols-[286px_minmax(0,1fr)]" >
+      <DashboardSidebar role={role} />
+      <div className="p-[28px] min-w-0">
+        <DashboardHeader />
+        {children}
+      </div>
+    </main>
   );
 };
 

@@ -1,3 +1,7 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { IconType } from "react-icons";
 import {
   FaUsers,
@@ -17,7 +21,6 @@ type MenuItem = {
   label: string;
   href: string;
   colorIcon?: string;
-  active?: Boolean;
 };
 
 const adminMenus: MenuItem[] = [
@@ -26,13 +29,13 @@ const adminMenus: MenuItem[] = [
     label: "Tổng quan",
     href: "/admin",
     colorIcon: "#34d399",
-    active: true,
   },
   {
     icon: FaUsers,
     label: "Quản lý nhân sự",
     href: "/admin/users",
-    colorIcon: "#a78bfa",
+    colorIcon: "#61178c"
+
   },
   {
     icon: FaFolder,
@@ -58,11 +61,10 @@ const adminMenus: MenuItem[] = [
     href: "/admin/feedbacks",
     colorIcon: "#f1eaf6",
   },
-
   {
-    icon: IoSparkles,
+    icon: FaBolt,
     label: "Tiến độ hậu kỳ",
-    href: "/admin/ai",
+    href: "/admin/progress",
     colorIcon: "#34d399",
   },
   {
@@ -112,36 +114,47 @@ const photographerMenus: MenuItem[] = [
   },
 ];
 
-type DashboardSidebarProps = {
+type SidebarMenuProps = {
   role: DashboardRole;
 };
 
-const SidebarMenu = ({ role }: DashboardSidebarProps) => {
+const SidebarMenu = ({ role }: SidebarMenuProps) => {
+  const pathname = usePathname();
+
   const menus = role === "admin" ? adminMenus : photographerMenus;
+
+  const isActive = (href: string) => {
+    if (href === "/admin" || href === "/photographer") {
+      return pathname === href;
+    }
+
+    return pathname.startsWith(href);
+  };
 
   return (
     <nav className="grid gap-[6px]">
       {menus.map((item) => {
         const Icon = item.icon;
+        const active = isActive(item.href);
 
         return (
-          <a
-            key={item.label}
+          <Link
+            key={item.href}
             href={item.href}
             className={`min-h-[46px] px-[14px] rounded-[15px] text-[14px] flex items-center gap-[12px] transition-all duration-[180ms]
-                    ${
-                      item.active
-                        ? "text-[var(--green-2)] bg-[rgba(16,185,129,0.12)]"
-                        : "text-[#b6c1d0] hover:text-[var(--green-2)] hover:bg-[rgba(16,185,129,0.12)]"
-                    }
-                `}
+              ${active
+                ? "text-[var(--green-2)] bg-[rgba(16,185,129,0.12)]"
+                : "text-[#b6c1d0] hover:text-[var(--green-2)] hover:bg-[rgba(16,185,129,0.12)]"
+              }
+            `}
           >
             <Icon
               className="text-[14px]"
               style={item.colorIcon ? { color: item.colorIcon } : undefined}
             />
+
             {item.label}
-          </a>
+          </Link>
         );
       })}
     </nav>

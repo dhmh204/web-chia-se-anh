@@ -7,11 +7,11 @@ const features = [
   {
     icon: FaFolder,
     title: "Quản lý album bảo mật",
-    description: "Khách truy cập bằng link và mật khẩu album.", 
+    description: "Khách truy cập bằng link và mật khẩu album.",
     colorIcon: "#ffd059"
   },
   {
-    icon: IoChatbubble ,
+    icon: IoChatbubble,
     title: "Phản hồi trực tiếp trên ảnh",
     description: "Ghim vùng cần sửa, bình luận và theo dõi trạng thái.",
     colorIcon: "#f1eaf6"
@@ -28,7 +28,7 @@ const features = [
 
 const HeroFeatureList = () => {
   return (
-    <div>
+    <div className="grid gap-[16px] max-w-[570px]">
       {features.map((feature, index) => (
         <HeroFeatureItem
           key={index}

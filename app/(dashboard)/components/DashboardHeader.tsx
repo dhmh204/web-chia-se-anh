@@ -1,7 +1,8 @@
-'use-client'
+'use client'
 import React from "react";
 import { dashboardHeaderConfig } from "./dashboardHeaderConfig";
 import { usePathname } from "next/navigation";
+import Button from "@/components/Button";
 
 const DashboardHeader = () => {
   const pathname = usePathname();
@@ -11,17 +12,14 @@ const DashboardHeader = () => {
       sectionLabel: "Dashboard",
       title: "Tổng quan",
     };
-
-
-const DashboardHeader = () => {
   return (
-    <header className="flex items-center justify-between rounded-[24px] border border-[var(--line)] bg-[rgba(255,255,255,0.03)] p-[22px]">
+    <header className="min-h-[74px] mb-[24px] px-[22px] py-[16px] border border-[var(--line)] rounded-[24px] bg-[rgba(8,13,12,0.72)] shadow-[var(--shadow)] backdrop-blur-[16px] flex items-center justify-between gap-[16px]">
       <div>
-        <p className="mb-[6px] text-[13px] text-[var(--muted)]">
+        <p className="text-[13px] text-[var(--muted)] mb-[5px]">
           {headerData.sectionLabel}
         </p>
 
-        <h1 className="text-[26px] font-bold">
+        <h1 className="text-[24px] font-bold tracking-[-0.035em]">
           {headerData.title}
         </h1>
       </div>
@@ -30,13 +28,13 @@ const DashboardHeader = () => {
         <input
           type="text"
           placeholder="Tìm kiếm nhanh..."
-          className="h-[44px] w-[280px] rounded-[14px] border border-[var(--line)] bg-[rgba(255,255,255,0.04)] px-[16px] text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--line-green)] focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
+          className="w-[280px] h-[44px] border border-[var(--line)] rounded-[14px] px-3.5 bg-[rgba(255,255,255,.035)] text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--muted-2)]"
         />
 
         {"actionLabel" in headerData && headerData.actionLabel && (
-          <button className="h-[44px] rounded-[14px] bg-[linear-gradient(135deg,#047857,#10b981)] px-[18px] text-[14px] font-bold text-white shadow-[0_0_34px_rgba(16,185,129,0.22)]">
+          <Button>
             {headerData.actionLabel}
-          </button>
+          </Button>
         )}
       </div>
     </header>

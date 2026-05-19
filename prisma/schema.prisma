@@ -10,7 +10,6 @@ generator client {
 enum VaiTro {
   ADMIN
   THO_ANH
-  KHACH_HANG
 }
 
 enum TrangThaiDuAn {
@@ -38,7 +37,7 @@ model NguoiDung {
   email             String   @unique
   so_dien_thoai     String?
   mat_khau_hash     String
-  vai_tro           VaiTro  @default(KHACH_HANG)
+  vai_tro           VaiTro  @default(THO_ANH)
 
   du_an_tao         Duan[]   @relation("NguoiTaoDuAn")
   su_phan_cong      SuPhanCong[] 
