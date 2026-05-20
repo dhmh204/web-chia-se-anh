@@ -35,6 +35,8 @@ const FeedbackItem = ({ imageName, customerName, note, status, srcImg, label }: 
             <StatusBadge variant={status} label={label} />
         </div>
 
+        
+
     )
 }
 export default FeedbackItem

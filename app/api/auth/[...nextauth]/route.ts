@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
           id: user.ma_nguoi_dung,
           email: user.email,
           name: user.ho_va_ten,
-          role: user.vai_tro
+          role: user.vai_tro,
         };
       },
     }),
@@ -52,23 +52,23 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.ma_nguoi_dung = user.id;
-        token.vai_tro = user.role; // user.role comes from authorize return
+        token.vai_tro = user.role;
       }
 
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
-        // @ts-ignore
         session.user.ma_nguoi_dung = token.ma_nguoi_dung;
-        // @ts-ignore
         session.user.vai_tro = token.vai_tro;
       }
+
       return session;
     },
   },
   pages: {
-    signIn: '/login'
+    signIn: "/login",
   },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,

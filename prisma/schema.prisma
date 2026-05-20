@@ -30,6 +30,10 @@ enum TrangThaiPhanHoi {
   DA_XU_LY @map("đã xử lý")
 
 }
+enum TrangThaiTaiKHoan {
+  HOAT_DONG @map("hoạt động")
+  KHOA @map("khóa")
+}
 
 model NguoiDung {
   ma_nguoi_dung     String   @id @default(uuid())
@@ -38,6 +42,7 @@ model NguoiDung {
   so_dien_thoai     String?
   mat_khau_hash     String
   vai_tro           VaiTro  @default(THO_ANH)
+  trang_thai        TrangThaiTaiKHoan @default(HOAT_DONG)
 
   du_an_tao         Duan[]   @relation("NguoiTaoDuAn")
   su_phan_cong      SuPhanCong[] 

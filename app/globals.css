@@ -18,15 +18,20 @@
 
     --green: #10b981;
     --green-2: #34d399;
-    
+
     --muted: #94a3b8;
     --muted-2: #64748b;
     --bg: #050706;
-
+    --field-bg:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.055),
+        rgba(255, 255, 255, 0.025)
+      ),
+      #101614;
     --surface: rgba(10, 15, 14, 0.86);
 
-    --shadow: 0 24px 70px rgba(0, 0, 0, .38);
-    
+    --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
   }
 }
 
@@ -57,37 +62,18 @@ body {
 
 /* Fix browser autofill background */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s !important;
   -webkit-text-fill-color: var(--text) !important;
 }
 
-
-.section-kicker {
-  color: var(--green-2);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  margin-bottom: 7px;
-}
-
-.panel{
-  padding: 22px;
-  margin-bottom: 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
-}
-
-table th, table td{
+table th,
+table td {
   padding: 15px 10px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, .075);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
   font-size: 14px;
   vertical-align: middle;
 }
