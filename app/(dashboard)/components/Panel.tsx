@@ -6,6 +6,7 @@ type PanelProp = {
   title: string;
   description?: string;
   textButton?: string;
+  hrefButton?: string;
   children: React.ReactNode;
 };
 
@@ -14,6 +15,7 @@ const Panel = ({
   title,
   description,
   textButton,
+  hrefButton,
   children,
 }: PanelProp) => {
   return (
@@ -30,7 +32,15 @@ const Panel = ({
             </p>
           )}
         </div>
-        {textButton && <Button variant="sm">{textButton}</Button>}
+        {textButton && (
+          hrefButton ? (
+            <a href={hrefButton} download>
+              <Button variant="sm">{textButton}</Button>
+            </a>
+          ) : (
+            <Button variant="sm">{textButton}</Button>
+          )
+        )}
       </div>
       {children}
     </div>

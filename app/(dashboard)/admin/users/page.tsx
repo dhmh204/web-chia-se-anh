@@ -1,7 +1,7 @@
-import React from "react";
 import StartCardList from "../../components/StartCardList";
-import CreateUser from "./components/CreateUser";
 import DashboardGrid from "../components/DashboardGrid";
+import UsersClient from "./components/UsersClient";
+import ListUsers from "./components/ListUsers";
 
 const classCssCommon =
   "border border-[var(--line)] rounded-[22px] bg-[var(--surface)] shadow-[var(--shadow)] backdrop-blur-[16px]";
@@ -36,8 +36,9 @@ const UsersPage = () => {
       <div>
         <StartCardList data={usersStatList} classCssCommon={classCssCommon} />
         <DashboardGrid>
-          <CreateUser/>
+          <UsersClient />
         </DashboardGrid>
+        <ListUsers />
       </div>
     </div>
   );

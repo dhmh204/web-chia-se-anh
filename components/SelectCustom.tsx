@@ -13,12 +13,14 @@ type SelectCustomProps = {
   values: SelectOption[];
   name?: string;
   label?: string;
+  onHiddenChange?: (hidden: boolean) => void;
 };
 
 const SelectCustom = ({
   values,
   name = "role",
   label = "Vai trò",
+  onHiddenChange,
 }: SelectCustomProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<SelectOption>(values[0]);
@@ -39,11 +41,16 @@ const SelectCustom = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  const handleSelect = (item: SelectOption) => {
+    setSelected(item);
+    setIsOpen(false);
 
-
+    const isHidden = item.name === "MANUAL";
+    onHiddenChange?.(isHidden);
+  };
   return (
-    <div  ref={selectRef}>
-      <Input label={label} type="hidden" name={selected.name} />
+    <div ref={selectRef}>
+      <Input label={label} type="hidden" name={name} value={selected.name} />
       <div className="relative">
         <button
           type="button"
@@ -63,12 +70,9 @@ const SelectCustom = ({
           <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 p-[8px] border border-[rgba(16,185,129,0.25)] rounded-[16px] bg-[#07100d] shadow-[0_18px_48px_rgba(0,0,0,0.48)] grid gap-[6px]">
             {values.map((item, i) => (
               <button
-              key={i}
+                key={i}
                 type="button"
-                onClick={() => {
-                  setSelected(item);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleSelect(item)}
                 className="w-full min-h-[42px] px-[12px] rounded-[12px] bg-transparent text-[#d1d5db] text-left duration-200 hover:bg-[rgba(16,185,129,0.12)] hover:text-[var(--green-2)] cursor-pointer"
               >
                 {item.value}

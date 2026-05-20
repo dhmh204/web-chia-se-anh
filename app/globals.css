@@ -77,3 +77,34 @@ table td {
   font-size: 14px;
   vertical-align: middle;
 }
+
+/* Toast animations */
+@keyframes toastEnter {
+  from {
+    transform: translateY(-12px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toastLeave {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-12px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+.animate-enter {
+  animation: toastEnter 0.25s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.animate-leave {
+  animation: toastLeave 0.2s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}

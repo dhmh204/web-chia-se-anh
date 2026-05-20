@@ -3,11 +3,10 @@ import { twMerge } from "tailwind-merge";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "sm";
+  variant?: "primary" | "secondary" | "sm" | "outline" | "danger";
 };
 
-const baseClass =
-  `min-h-[48px] py-0 px-4 rounded-[14px] border border-[var(--line)] bg-[rgba(255,255,255,0.055)] text-[var(--text)] inline-flex items-center justify-center gap-[8px] transition-all duration-[180ms]
+const baseClass = `min-h-[48px] py-0 px-4 rounded-[14px] border border-[var(--line)] bg-[rgba(255,255,255,0.055)] text-[var(--text)] inline-flex items-center justify-center gap-[8px] transition-all duration-[180ms]
    hover:translate-y-1 hover:border-[var(--line-green)] hover:bg-[rgba(16,185,129,0.12)]`;
 
 const variantClass = {
@@ -16,6 +15,9 @@ const variantClass = {
   secondary:
     "bg-transparent border border-[var(--line)] text-[var(--text)] hover:border-[var(--line-green)]",
   sm: "min-h-[34px] py-0 px-4 rounded-[11px] text-[13px]",
+  outline: "",
+  danger:
+    "min-h-[34px] py-0 px-4 rounded-[11px] text-[#fecdd3] border border-[rgba(251,113,133,0.3)] bg-[rgba(251,113,133,0.08)]",
 };
 
 const Button = ({
@@ -36,7 +38,7 @@ const Button = ({
         disabled
           ? "opacity-50 cursor-not-allowed hover:translate-y-0"
           : "cursor-pointer",
-        className
+        className,
       )}
       {...props}
     >
