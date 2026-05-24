@@ -7,7 +7,9 @@ type PanelProp = {
   description?: string;
   textButton?: string;
   hrefButton?: string;
+  variant?: "primary" | "secondary" | "sm" | "outline" | "danger";
   children: React.ReactNode;
+  onClick?: () => void;
 };
 
 const Panel = ({
@@ -16,7 +18,9 @@ const Panel = ({
   description,
   textButton,
   hrefButton,
+  variant = "sm",
   children,
+  onClick,
 }: PanelProp) => {
   return (
     <div className="mb-[18px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] p-[22px] shadow-[var(--shadow)] backdrop-blur-[16px]">
@@ -32,15 +36,16 @@ const Panel = ({
             </p>
           )}
         </div>
-        {textButton && (
-          hrefButton ? (
+        {textButton &&
+          (hrefButton ? (
             <a href={hrefButton} download>
-              <Button variant="sm">{textButton}</Button>
+              <Button variant={variant}>{textButton}</Button>
             </a>
           ) : (
-            <Button variant="sm">{textButton}</Button>
-          )
-        )}
+            <Button variant={variant} onClick={onClick}>
+              {textButton}
+            </Button>
+          ))}
       </div>
       {children}
     </div>

@@ -33,6 +33,11 @@ export const dashboardHeaderConfig = {
     sectionLabel: "Phản hồi ảnh",
     title: "Danh sách phản hồi",
   },
+  "/admin/customers": {
+    sectionLabel: "Quản trị hệ thống",
+    title: "Danh sách khách hàng",
+    actionLabel: "+ Thêm khách hàng",
+  },
 
   "/admin/settings": {
     sectionLabel: "Cài đặt",

@@ -318,6 +318,7 @@ export async function GET(request: Request) {
           trang_thai: true,
           ghi_chu: true,
           ngay_tao: true,
+          anh_dai_dien: true,
 
           _count: {
             select: {
@@ -352,6 +353,201 @@ export async function GET(request: Request) {
 
     return NextResponse.json(
       { message: "Lỗi server khi lấy danh sách người dùng" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { message: "Bạn chưa đăng nhập" },
+        { status: 401 },
+      );
+    }
+
+    if (session.user?.vai_tro !== "ADMIN") {
+      return NextResponse.json(
+        { message: "Bạn không có quyền chỉnh sửa tài khoản" },
+        { status: 403 },
+      );
+    }
+
+    let ma_nguoi_dung = "";
+    let ho_va_ten = "";
+    let email = "";
+    let so_dien_thoai: string | null = null;
+    let vai_tro: VaiTro = VaiTro.THO_ANH;
+    let trang_thai: TrangThaiTaiKHoan = TrangThaiTaiKHoan.HOAT_DONG;
+    let ghi_chu = "";
+    let matKhauInput = "";
+    let avatarFile: File | null = null;
+
+    const contentType = request.headers.get("content-type") || "";
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      ma_nguoi_dung = (formData.get("ma_nguoi_dung") as string) || "";
+      ho_va_ten = (formData.get("name") as string)?.trim() || "";
+      email = (formData.get("email") as string)?.trim().toLowerCase() || "";
+      so_dien_thoai = (formData.get("telphone") as string)?.trim() || null;
+      vai_tro = (formData.get("role") as VaiTro) || VaiTro.THO_ANH;
+      trang_thai =
+        (formData.get("stateAccount") as TrangThaiTaiKHoan) ||
+        TrangThaiTaiKHoan.HOAT_DONG;
+      ghi_chu = (formData.get("note") as string)?.trim() || "";
+      matKhauInput = (formData.get("password") as string)?.trim() || "";
+      avatarFile = formData.get("avatar") as File | null;
+    } else {
+      const body = await request.json();
+      ma_nguoi_dung = body.ma_nguoi_dung || "";
+      ho_va_ten = body.ho_va_ten?.trim() || "";
+      email = body.email?.trim().toLowerCase() || "";
+      so_dien_thoai = body.so_dien_thoai?.trim() || null;
+      vai_tro = body.vai_tro || VaiTro.THO_ANH;
+      trang_thai = body.trang_thai || TrangThaiTaiKHoan.HOAT_DONG;
+      ghi_chu = body.ghi_chu?.trim() || "";
+      matKhauInput = body.mat_khau?.trim() || "";
+    }
+
+    if (!ma_nguoi_dung) {
+      return NextResponse.json(
+        { message: "Mã người dùng không hợp lệ" },
+        { status: 400 },
+      );
+    }
+
+    // Verify fields
+    if (!ho_va_ten) return NextResponse.json({ message: "Vui lòng nhập họ và tên" }, { status: 400 });
+    if (!email) return NextResponse.json({ message: "Vui lòng nhập email" }, { status: 400 });
+    if (!isValidEmail(email)) return NextResponse.json({ message: "Email không hợp lệ" }, { status: 400 });
+
+    // Check email uniqueness
+    const existingUser = await prisma.nguoiDung.findFirst({
+      where: {
+        email,
+        NOT: {
+          ma_nguoi_dung
+        }
+      }
+    });
+    if (existingUser) {
+      return NextResponse.json({ message: "Email đã được sử dụng bởi tài khoản khác" }, { status: 400 });
+    }
+
+    const updateData: any = {
+      ho_va_ten,
+      email,
+      so_dien_thoai,
+      vai_tro,
+      trang_thai,
+      ghi_chu,
+    };
+
+    if (matKhauInput && matKhauInput.trim().length >= 6) {
+      updateData.mat_khau_hash = await bcrypt.hash(matKhauInput.trim(), 10);
+    }
+
+    // Handle avatar upload if provided
+    if (avatarFile && avatarFile.size > 0) {
+      try {
+        const arrayBuffer = await avatarFile.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const mimeType = avatarFile.type;
+        const base64Data = buffer.toString("base64");
+        const fileUri = `data:${mimeType};base64,${base64Data}`;
+
+        const uploadRes = await cloudinary.uploader.upload(fileUri, {
+          folder: "user_avatars",
+        });
+        updateData.anh_dai_dien = uploadRes.secure_url;
+      } catch (uploadError: any) {
+        console.error("CLOUDINARY_UPLOAD_ERROR_PATCH", uploadError);
+        return NextResponse.json(
+          { message: `Không thể tải lên ảnh đại diện: ${uploadError.message || "Lỗi upload"}` },
+          { status: 500 }
+        );
+      }
+    }
+
+    const updatedUser = await prisma.nguoiDung.update({
+      where: { ma_nguoi_dung },
+      data: updateData,
+      select: {
+        ma_nguoi_dung: true,
+        ho_va_ten: true,
+        email: true,
+        so_dien_thoai: true,
+        vai_tro: true,
+        trang_thai: true,
+        ghi_chu: true,
+        anh_dai_dien: true,
+      }
+    });
+
+    return NextResponse.json(
+      { message: "Cập nhật tài khoản thành công", user: updatedUser },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("PATCH_USER_ERROR", error);
+    return NextResponse.json(
+      { message: "Lỗi server khi cập nhật tài khoản" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { message: "Bạn chưa đăng nhập" },
+        { status: 401 },
+      );
+    }
+
+    if (session.user?.vai_tro !== "ADMIN") {
+      return NextResponse.json(
+        { message: "Bạn không có quyền xóa tài khoản" },
+        { status: 403 },
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "Mã người dùng không hợp lệ" },
+        { status: 400 },
+      );
+    }
+
+    // Prevent deleting self
+    if (session.user?.ma_nguoi_dung === id) {
+      return NextResponse.json(
+        { message: "Bạn không thể tự xóa tài khoản của chính mình" },
+        { status: 400 },
+      );
+    }
+
+    await prisma.nguoiDung.delete({
+      where: { ma_nguoi_dung: id }
+    });
+
+    return NextResponse.json(
+      { message: "Xóa tài khoản thành công" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("DELETE_USER_ERROR", error);
+    return NextResponse.json(
+      { message: "Lỗi server khi xóa tài khoản" },
       { status: 500 },
     );
   }

@@ -1,10 +1,24 @@
 import React from "react";
+import Link from "next/link";
 import { twMerge } from "tailwind-merge";
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type CommonProps = {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "sm" | "outline" | "danger";
+  disabled?: boolean;
 };
+
+type ButtonAsButtonProps = CommonProps &
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: never;
+  };
+
+type ButtonAsLinkProps = CommonProps &
+  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+  };
+
+type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
 
 const baseClass = `min-h-[48px] py-0 px-4 rounded-[14px] border border-[var(--line)] bg-[rgba(255,255,255,0.055)] text-[var(--text)] inline-flex items-center justify-center gap-[8px] transition-all duration-[180ms]
    hover:translate-y-1 hover:border-[var(--line-green)] hover:bg-[rgba(16,185,129,0.12)]`;
@@ -23,24 +37,40 @@ const variantClass = {
 const Button = ({
   children,
   variant = "primary",
-  type = "button",
   className,
   disabled,
+  href,
   ...props
 }: ButtonProps) => {
+  const combinedClassName = twMerge(
+    baseClass,
+    variantClass[variant],
+    disabled
+      ? "opacity-50 cursor-not-allowed hover:translate-y-0"
+      : "cursor-pointer",
+    className,
+  );
+
+  if (href) {
+    const { type, ...anchorProps } = props as any;
+    return (
+      <Link
+        href={href}
+        className={combinedClassName}
+        {...(anchorProps as any)}
+      >
+        {children}
+      </Link>
+    );
+  }
+
+  const { type = "button", ...buttonProps } = props as any;
   return (
     <button
       type={type}
       disabled={disabled}
-      className={twMerge(
-        baseClass,
-        variantClass[variant],
-        disabled
-          ? "opacity-50 cursor-not-allowed hover:translate-y-0"
-          : "cursor-pointer",
-        className,
-      )}
-      {...props}
+      className={combinedClassName}
+      {...buttonProps}
     >
       {children}
     </button>
@@ -48,3 +78,4 @@ const Button = ({
 };
 
 export default Button;
+

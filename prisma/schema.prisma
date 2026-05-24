@@ -27,6 +27,7 @@ enum LoaiAlb {
 
 enum TrangThaiPhanHoi {
   CHUA_XU_LY @map("chưa xử lý")
+  DANG_XU_LY @map("đang xử lý")
   DA_XU_LY   @map("đã xử lý")
 }
 
@@ -65,12 +66,26 @@ model Duan {
   link_anh_bia String?
   nguoi_tao    String
   ngay_tao     DateTime      @default(now())
+  ma_khach_hang String?
+  ghi_chu       String?       @default("")
 
+  khach_hang    KhachHang? @relation(fields: [ma_khach_hang], references: [ma_khach_hang], onDelete: SetNull)
   creator      NguoiDung    @relation("NguoiTaoDuAn", fields: [nguoi_tao], references: [ma_nguoi_dung], onDelete: Cascade)
   albums       Album[]
   su_phan_cong SuPhanCong[]
 
   @@map("DUAN")
+}
+
+model KhachHang {
+  ma_khach_hang String   @id @default(uuid())
+  ho_va_ten     String
+  so_dien_thoai String   @unique
+  ngay_tao      DateTime @default(now())
+
+  du_an Duan[]
+
+  @@map("KHACHHANG")
 }
 
 model SuPhanCong {
@@ -94,6 +109,7 @@ model Album {
   nguoi_tao      String
   ngay_tao       DateTime @default(now())
 
+
   creator   NguoiDung  @relation("NguoiTaoAlbum", fields: [nguoi_tao], references: [ma_nguoi_dung], onDelete: Cascade)
   du_an     Duan       @relation(fields: [ma_du_an], references: [ma_du_an], onDelete: Cascade)
   hinh_anh  HinhAnh[]
@@ -108,7 +124,7 @@ model HinhAnh {
   url_anh     String
   bi_mo       Boolean  @default(false)
   ngay_tao    DateTime @default(now())
-
+  yeu_thich Boolean @default(false)
   album               Album              @relation(fields: [ma_album], references: [ma_album], onDelete: Cascade)
   phan_hoi            PhanHoi[]
   chi_tiet_nhan       ChiTietNhan[]

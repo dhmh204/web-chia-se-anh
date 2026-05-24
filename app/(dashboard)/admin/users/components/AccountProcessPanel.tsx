@@ -2,7 +2,7 @@
 
 import Panel from "@/app/(dashboard)/components/Panel";
 import React from "react";
-import ProcessItem from "./ProcessItem";
+import ProcessItem from "../../../components/ProcessItem";
 import Notice from "@/app/(dashboard)/components/Notice";
 
 const processList = [

@@ -29,13 +29,19 @@ export default function RootLayout({
     <html lang="vi">
       <link rel="icon" href="/images/logo.ico" sizes="any" />
       <body  className={inter.className} >
-        <Toaster position="top-right" toastOptions={{
-          style: {
-            background: "#07100d",
-            color: "#f8fafc",
-            border: "1px solid rgba(16, 185, 129, 0.35)",
-          }
-        }} />
+        <Toaster 
+          position="top-right" 
+          containerStyle={{
+            zIndex: 999999,
+          }}
+          toastOptions={{
+            style: {
+              background: "#07100d",
+              color: "#f8fafc",
+              border: "1px solid rgba(16, 185, 129, 0.35)",
+            }
+          }} 
+        />
         {children}</body>
     </html>
   );

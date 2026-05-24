@@ -11,6 +11,7 @@ import {
   FaBolt,
   FaCog,
   FaCamera,
+  FaUser,
 } from "react-icons/fa";
 import { IoGrid, IoSparkles } from "react-icons/io5";
 
@@ -34,8 +35,12 @@ const adminMenus: MenuItem[] = [
     icon: FaUsers,
     label: "Quản lý nhân sự",
     href: "/admin/users",
-    colorIcon: "#61178c"
-
+    colorIcon: "#61178c",
+  },
+  {
+    icon: FaUser,
+    label: "Quản lý khách hàng",
+    href: "/admin/customers",
   },
   {
     icon: FaFolder,
@@ -142,9 +147,10 @@ const SidebarMenu = ({ role }: SidebarMenuProps) => {
             key={item.href}
             href={item.href}
             className={`min-h-[46px] px-[14px] rounded-[15px] text-[14px] flex items-center gap-[12px] transition-all duration-[180ms]
-              ${active
-                ? "text-[var(--green-2)] bg-[rgba(16,185,129,0.12)]"
-                : "text-[#b6c1d0] hover:text-[var(--green-2)] hover:bg-[rgba(16,185,129,0.12)]"
+              ${
+                active
+                  ? "text-[var(--green-2)] bg-[rgba(16,185,129,0.12)]"
+                  : "text-[#b6c1d0] hover:text-[var(--green-2)] hover:bg-[rgba(16,185,129,0.12)]"
               }
             `}
           >

@@ -35,7 +35,9 @@ const UsersClient = () => {
       });
 
       if (!response.body) {
-        throw new Error("Không thể thiết lập kênh truyền tải dữ liệu tiến trình.");
+        throw new Error(
+          "Không thể thiết lập kênh truyền tải dữ liệu tiến trình.",
+        );
       }
 
       const reader = response.body.getReader();

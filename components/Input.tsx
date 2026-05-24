@@ -15,12 +15,14 @@ const Input = ({
 }: InputProps) => {
   return (
     <div className="flex flex-col gap-[7px]">
-      <label
-        htmlFor={name}
-        className="text-[#d1d5db] text-[13px] font-semibold"
-      >
-        {label}
-      </label>
+      {label && (
+        <label
+          htmlFor={name}
+          className="text-[#d1d5db] text-[13px] font-semibold"
+        >
+          {label}
+        </label>
+      )}
       <input
         id={name}
         name={name}

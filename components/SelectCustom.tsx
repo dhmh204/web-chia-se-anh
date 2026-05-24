@@ -14,6 +14,8 @@ type SelectCustomProps = {
   name?: string;
   label?: string;
   onHiddenChange?: (hidden: boolean) => void;
+  value?: string;
+  onChange?: (value: string) => void;
 };
 
 const SelectCustom = ({
@@ -21,10 +23,34 @@ const SelectCustom = ({
   name = "role",
   label = "Vai trò",
   onHiddenChange,
+  value,
+  onChange,
 }: SelectCustomProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState<SelectOption>(values[0]);
+  const [selected, setSelected] = useState<SelectOption | null>(() => {
+    if (value !== undefined) {
+      return values.find((v) => v.name === value) || null;
+    }
+    return values && values.length > 0 ? values[0] : null;
+  });
   const selectRef = useRef<HTMLDivElement | null>(null);
+
+  // Sync selected item when values prop or controlled value changes
+  useEffect(() => {
+    if (value !== undefined) {
+      const match = values.find((v) => v.name === value);
+      setSelected(match || null);
+      return;
+    }
+    if (values && values.length > 0) {
+      const exists = values.find((v) => v.name === selected?.name);
+      if (!exists) {
+        setSelected(values[0]);
+      }
+    } else {
+      setSelected(null);
+    }
+  }, [values, value]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,16 +67,23 @@ const SelectCustom = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   const handleSelect = (item: SelectOption) => {
     setSelected(item);
     setIsOpen(false);
+    onChange?.(item.name);
 
     const isHidden = item.name === "MANUAL";
     onHiddenChange?.(isHidden);
   };
   return (
-    <div ref={selectRef}>
-      <Input label={label} type="hidden" name={name} value={selected.name} />
+    <div ref={selectRef} className="flex flex-col gap-[7px]">
+      <Input
+        label={label}
+        type="hidden"
+        name={name}
+        value={selected?.name || ""}
+      />
       <div className="relative">
         <button
           type="button"
@@ -59,7 +92,7 @@ const SelectCustom = ({
           focus:border-[var(--line-green)] focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span>{selected.value}</span>
+          <span>{selected?.value || "Chọn..."}</span>
           <IoMdArrowDropdown
             className={`text-[var(--green-2)] duration-200 ${
               isOpen ? "rotate-180" : ""

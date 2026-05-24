@@ -50,7 +50,7 @@ const LoginForm = () => {
         <h2 className="text-[32px] tracking-[-0.04em] text-center font-bold mb-[30px]">
           Đăng nhập hệ thống
         </h2>
-        <form onSubmit={handleSubmit} className="grid gap-[30px]">
+        <form onSubmit={handleSubmit} className="grid gap-[30px]" method="POST">
           <Input
             label="Email"
             placeholder="abc@gmaill.com"

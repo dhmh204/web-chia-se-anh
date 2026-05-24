@@ -11,7 +11,7 @@ const Notice = ({ title = "Lưu ý", description }: NoticeProps) => {
       <h3 className="mb-2 text-[var(--green-2)] text-[15px] font-bold">
         {title}
       </h3>
-      <p className="text-[rgb(203,213,225)] text-[13px] leading-1.6">
+      <p className="text-[rgb(203,213,225)] text-[13px] leading-1.6 whitespace-pre-line">
         {description}
       </p>
     </div>

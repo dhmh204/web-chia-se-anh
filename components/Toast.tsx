@@ -13,7 +13,7 @@ export const toastNotify = {
         <div
           className={`${
             t.visible ? "animate-enter" : "animate-leave"
-          } flex w-[360px] gap-3 p-4 border border-[rgba(16,185,129,0.25)] border-l-[6px] border-l-[#10b981] rounded-[18px] bg-[#07100d] shadow-[0_12px_40px_rgba(0,0,0,0.5)] pointer-events-auto relative`}
+          } flex w-[360px] gap-3 p-4 border border-[rgba(16,185,129,0.25)] border-l-[6px] border-l-[#10b981] rounded-[18px] bg-[#07100d] shadow-[0_12px_40px_rgba(0,0,0,0.5)] pointer-events-auto relative z-[999999]`}
         >
           <div className="text-[#10b981] mt-0.5 text-[22px] flex-shrink-0">
             <IoMdCheckmarkCircle />
@@ -41,7 +41,7 @@ export const toastNotify = {
         <div
           className={`${
             t.visible ? "animate-enter" : "animate-leave"
-          } flex w-[360px] gap-3 p-4 border border-[rgba(251,113,133,0.25)] border-l-[6px] border-l-[#fb7185] rounded-[18px] bg-[#07100d] shadow-[0_12px_40px_rgba(0,0,0,0.5)] pointer-events-auto relative`}
+          }  z-[999999] flex w-[360px] gap-3 p-4 border border-[rgba(251,113,133,0.25)] border-l-[6px] border-l-[#fb7185] rounded-[18px] bg-[#07100d] shadow-[0_12px_40px_rgba(0,0,0,0.5)] pointer-events-auto relative`}
         >
           <div className="text-[#fb7185] mt-0.5 text-[22px] flex-shrink-0">
             <IoMdCloseCircle />
