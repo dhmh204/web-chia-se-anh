@@ -28,6 +28,12 @@ export type PhotoType = {
     phan_hoi: string;
     nguoi_binh_luan: string;
     ngay_tao: Date | string;
+    toa_do_X: number;
+    toa_do_Y: number;
+    phan_tram_chieu_rong: number;
+    phan_tram_chieu_cao: number;
+    ma_tho_anh?: string | null;
+    trang_thai: string;
   }[];
 };
 
@@ -121,7 +127,10 @@ const PhotoCard = ({
 
         {/* Heart Quick Action Overlay */}
         <button
-          onClick={(e) => { e.stopPropagation(); onLikeToggle(photo); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onLikeToggle(photo);
+          }}
           className={` z-50 cursor-pointer absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 `}
           title={photo.yeu_thich ? "Bỏ yêu thích" : "Yêu thích"}
         >

@@ -1,7 +1,8 @@
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import AlbumDetail from "./AlbumDetail";
+import { cookies } from "next/headers";
+import AlbumDetailClient from "./components/AlbumDetailClient";
 
 export const revalidate = 0;
 
@@ -9,14 +10,14 @@ type PageProps = {
   params: Promise<{ ma_album: string }>;
 };
 
-const AdminAlbumDetailPage = async ({ params }: PageProps) => {
+export default async function CustomerAlbumDetailPage({ params }: PageProps) {
   const { ma_album } = await params;
 
   if (!ma_album) {
     return notFound();
   }
 
-  // Fetch album details, associated project info, and all photos
+  // Fetch album with associated project, images, feedback, and face groupings
   const album = await prisma.album.findUnique({
     where: { ma_album },
     include: {
@@ -25,7 +26,6 @@ const AdminAlbumDetailPage = async ({ params }: PageProps) => {
           ma_du_an: true,
           ten_du_an: true,
           mat_khau: true,
-          trang_thai: true,
         },
       },
       hinh_anh: {
@@ -52,6 +52,15 @@ const AdminAlbumDetailPage = async ({ params }: PageProps) => {
           },
         },
       },
+      khuon_mat: {
+        include: {
+          khuon_mat_trong_anh: {
+            select: {
+              ma_hinh_anh: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -59,32 +68,41 @@ const AdminAlbumDetailPage = async ({ params }: PageProps) => {
     return notFound();
   }
 
-  // Calculate statistics for this album
-  const totalPhotosCount = album.hinh_anh.length;
+  const project = album.du_an;
+  const hasPassword = project.mat_khau !== null && project.mat_khau.trim() !== "";
 
+  // Server-side check for password protection of the parent project
+  if (hasPassword) {
+    const cookieStore = await cookies();
+    const unlocked = cookieStore.get(`project_unlocked_${project.ma_du_an}`)?.value === "true";
+    if (!unlocked) {
+      redirect(`/projects/${project.ma_du_an}/access`);
+    }
+  }
+
+  // Calculate statistics
+  const totalPhotosCount = album.hinh_anh.length;
+  const totalFavoritesCount = album.hinh_anh.filter((p) => p.yeu_thich).length;
   const totalFeedbackCount = album.hinh_anh.reduce(
     (acc, photo) => acc + photo.phan_hoi.length,
-    0,
+    0
   );
 
-  const pendingFeedbackCount = album.hinh_anh.reduce(
-    (acc, photo) =>
-      acc + photo.phan_hoi.filter((f) => f.trang_thai === "CHUA_XU_LY").length,
-    0,
-  );
+  const stats = {
+    totalPhotos: totalPhotosCount,
+    totalFavorites: totalFavoritesCount,
+    totalFeedback: totalFeedbackCount,
+  };
 
-  // Serialize properties to prevent Date and Decimal next payload warnings
+  // Serialize properties to prevent Date and Decimal warnings in Next.js Client payload
   const serializedAlbum = {
     ma_album: album.ma_album,
     ten_alb: album.ten_alb,
     loai_alb: album.loai_alb,
     quyen_download: album.quyen_download,
-    ngay_tao: album.ngay_tao.toISOString(),
     du_an: {
-      ma_du_an: album.du_an.ma_du_an,
-      ten_du_an: album.du_an.ten_du_an,
-      mat_khau: album.du_an.mat_khau || "",
-      trang_thai: album.du_an.trang_thai,
+      ma_du_an: project.ma_du_an,
+      ten_du_an: project.ten_du_an,
     },
     hinh_anh: album.hinh_anh.map((photo) => ({
       ma_hinh_anh: photo.ma_hinh_anh,
@@ -96,8 +114,8 @@ const AdminAlbumDetailPage = async ({ params }: PageProps) => {
         ten_alb: album.ten_alb,
         loai_alb: album.loai_alb,
         du_an: {
-          ten_du_an: album.du_an.ten_du_an,
-          trang_thai: album.du_an.trang_thai,
+          ten_du_an: project.ten_du_an,
+          trang_thai: "MOI" as any,
         },
       },
       phan_hoi: photo.phan_hoi.map((f) => ({
@@ -113,15 +131,13 @@ const AdminAlbumDetailPage = async ({ params }: PageProps) => {
         ma_tho_anh: f.ma_tho_anh,
       })),
     })),
+    khuon_mat: album.khuon_mat.map((face) => ({
+      ma_nhom: face.ma_nhom,
+      ten_nhan_vat: face.ten_nhan_vat,
+      anh_dai_dien: face.anh_dai_dien,
+      photoIds: face.khuon_mat_trong_anh.map((k) => k.ma_hinh_anh),
+    })),
   };
 
-  const stats = {
-    totalPhotos: totalPhotosCount,
-    totalFeedback: totalFeedbackCount,
-    pendingFeedback: pendingFeedbackCount,
-  };
-
-  return <AlbumDetail album={serializedAlbum as any} stats={stats} />;
-};
-
-export default AdminAlbumDetailPage;
+  return <AlbumDetailClient album={serializedAlbum as any} stats={stats} />;
+}

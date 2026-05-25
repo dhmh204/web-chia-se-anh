@@ -404,6 +404,12 @@ const PhotosClient = ({
           phan_hoi: data.feedback.phan_hoi,
           nguoi_binh_luan: data.feedback.nguoi_binh_luan,
           ngay_tao: data.feedback.ngay_tao,
+          toa_do_X: Number(data.feedback.toa_do_X) || 50,
+          toa_do_Y: Number(data.feedback.toa_do_Y) || 50,
+          phan_tram_chieu_rong: Number(data.feedback.phan_tram_chieu_rong) || 10,
+          phan_tram_chieu_cao: Number(data.feedback.phan_tram_chieu_cao) || 10,
+          ma_tho_anh: data.feedback.ma_tho_anh,
+          trang_thai: data.feedback.trang_thai || "CHUA_XU_LY",
         };
 
         setPhotos((prev) =>
@@ -433,6 +439,110 @@ const PhotosClient = ({
     } catch (err) {
       console.error(err);
       toastNotify.error("Lỗi", "Không thể gửi phản hồi.");
+      return false;
+    }
+  };
+
+  const handleDeleteComment = async (
+    photoId: string,
+    feedbackId: string,
+  ): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/admin/feedbacks?id=${feedbackId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toastNotify.success("Thành công", "Đã xóa phản hồi.");
+
+        setPhotos((prev) =>
+          prev.map((p) => {
+            if (p.ma_hinh_anh === photoId) {
+              return {
+                ...p,
+                phan_hoi: p.phan_hoi.filter((fb) => fb.ma_phan_hoi !== feedbackId),
+              };
+            }
+            return p;
+          }),
+        );
+
+        setSelectedPhoto((prev) => {
+          if (prev && prev.ma_hinh_anh === photoId) {
+            return {
+              ...prev,
+              phan_hoi: prev.phan_hoi.filter((fb) => fb.ma_phan_hoi !== feedbackId),
+            };
+          }
+          return prev;
+        });
+
+        return true;
+      } else {
+        const data = await res.json();
+        toastNotify.error("Thất bại", data.message || "Không thể xóa phản hồi.");
+        return false;
+      }
+    } catch (err) {
+      console.error(err);
+      toastNotify.error("Lỗi", "Không thể kết nối máy chủ để xóa phản hồi.");
+      return false;
+    }
+  };
+
+  const handleEditComment = async (
+    photoId: string,
+    feedbackId: string,
+    commentText: string,
+  ): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/admin/feedbacks", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ma_phan_hoi: feedbackId,
+          phan_hoi: commentText,
+        }),
+      });
+
+      if (res.ok) {
+        toastNotify.success("Thành công", "Đã cập nhật phản hồi.");
+
+        setPhotos((prev) =>
+          prev.map((p) => {
+            if (p.ma_hinh_anh === photoId) {
+              return {
+                ...p,
+                phan_hoi: p.phan_hoi.map((fb) =>
+                  fb.ma_phan_hoi === feedbackId ? { ...fb, phan_hoi: commentText } : fb,
+                ),
+              };
+            }
+            return p;
+          }),
+        );
+
+        setSelectedPhoto((prev) => {
+          if (prev && prev.ma_hinh_anh === photoId) {
+            return {
+              ...prev,
+              phan_hoi: prev.phan_hoi.map((fb) =>
+                fb.ma_phan_hoi === feedbackId ? { ...fb, phan_hoi: commentText } : fb,
+              ),
+            };
+          }
+          return prev;
+        });
+
+        return true;
+      } else {
+        const data = await res.json();
+        toastNotify.error("Thất bại", data.message || "Không thể cập nhật phản hồi.");
+        return false;
+      }
+    } catch (err) {
+      console.error(err);
+      toastNotify.error("Lỗi", "Không thể kết nối máy chủ để cập nhật phản hồi.");
       return false;
     }
   };
@@ -571,6 +681,8 @@ const PhotosClient = ({
         onRunAI={handleRunAI}
         onDelete={handleDeletePhoto}
         onAddComment={handleAddComment}
+        onDeleteComment={handleDeleteComment}
+        onEditComment={handleEditComment}
         runningAIPhotoId={runningAIPhotoId}
       />
 
