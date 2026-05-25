@@ -1,0 +1,62 @@
+export const mockProjects = [
+  {
+    ma_du_an: "du_an_001",
+    ten_du_an: "Kỷ yếu 12A1 - THPT Nguyễn Hiền",
+    ngay_chup: "2026-05-20T08:00:00.000Z",
+    link_anh_bia: "/images/example.jpg",
+    hasPassword: true,
+    mat_khau: "123456",
+    albums: [
+      {
+        ma_album: "album_001",
+        ten_alb: "Ảnh gốc",
+        loai_alb: "ANH_GOC",
+        quyen_download: false,
+        coverImage: "/images/example.jpg",
+        photoCount: 248,
+      },
+      {
+        ma_album: "album_002",
+        ten_alb: "Ảnh hậu kỳ",
+        loai_alb: "HAU_KY",
+        quyen_download: false,
+        coverImage: "/images/example.jpg",
+        photoCount: 86,
+      },
+      {
+        ma_album: "album_003",
+        ten_alb: "Ảnh final",
+        loai_alb: "CUOI_CUNG",
+        quyen_download: true,
+        coverImage: "/images/example.jpg",
+        photoCount: 42,
+      },
+    ],
+  },
+  {
+    ma_du_an: "du_an_002",
+    ten_du_an: "Concept nàng thơ",
+    ngay_chup: "2026-06-02T14:00:00.000Z",
+    link_anh_bia: "/images/example.jpg",
+    hasPassword: true,
+    mat_khau: "nangtho",
+    albums: [
+      {
+        ma_album: "album_004",
+        ten_alb: "Ảnh gốc",
+        loai_alb: "ANH_GOC",
+        quyen_download: false,
+        coverImage: "/images/example.jpg",
+        photoCount: 120,
+      },
+      {
+        ma_album: "album_005",
+        ten_alb: "Ảnh final",
+        loai_alb: "CUOI_CUNG",
+        quyen_download: true,
+        coverImage: "/images/example.jpg",
+        photoCount: 30,
+      },
+    ],
+  },
+];
