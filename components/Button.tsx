@@ -27,7 +27,7 @@ const variantClass = {
   primary:
     "border-[rgba(16,185,129,0.5)] bg-[linear-gradient(135deg,#047857,#10b981)] shadow-[0_0_34px_rgba(16,185,129,0.22)]",
   secondary:
-    "bg-transparent border border-[var(--line)] text-[var(--text)] hover:border-[var(--line-green)]",
+    "",
   sm: "min-h-[34px] py-0 px-4 rounded-[11px] text-[13px]",
   outline: "",
   danger:

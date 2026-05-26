@@ -28,7 +28,6 @@ type PhotoCardProps = {
   photo: Photo;
   filename: string;
   status: { label: string; variant: string };
-  mockLikesCount: number;
   onOpenLightbox: () => void;
   onToggleFavorite: (e: React.MouseEvent) => void;
 };
@@ -50,7 +49,6 @@ export const PhotoCard = ({
   photo,
   filename,
   status,
-  mockLikesCount,
   onOpenLightbox,
   onToggleFavorite,
 }: PhotoCardProps) => {
@@ -74,11 +72,10 @@ export const PhotoCard = ({
             {/* Favorite Button */}
             <button
               onClick={onToggleFavorite}
-              className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all cursor-pointer ${
-                photo.yeu_thich
-                  ? "bg-[#10b981] border-[#10b981] text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                  : "bg-black/45 border-white/10 text-white hover:bg-black/60"
-              }`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all cursor-pointer ${photo.yeu_thich
+                ? "bg-[#10b981] border-[#10b981] text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                : "bg-black/45 border-white/10 text-white hover:bg-black/60"
+                }`}
             >
               <Heart
                 size={14}
@@ -115,7 +112,6 @@ export const PhotoCard = ({
         </div>
         <div className="flex justify-between items-center text-[12px] text-[var(--muted)] font-semibold mt-1">
           <span>{photo.phan_hoi.length} phản hồi</span>
-          <span>{mockLikesCount} yêu thích</span>
         </div>
       </div>
     </div>

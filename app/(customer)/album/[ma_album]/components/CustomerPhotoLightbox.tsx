@@ -15,6 +15,7 @@ import {
   HelpCircle,
   Pencil,
   Trash2,
+  GripVertical,
 } from "lucide-react";
 import { Photo, Feedback } from "./PhotoCard";
 import { toastNotify } from "@/components/Toast";
@@ -64,6 +65,12 @@ export const CustomerPhotoLightbox = ({
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [highlightedPinId, setHighlightedPinId] = useState<string | null>(null);
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
+
+  // Draggable toolbar state and refs
+  const [toolbarOffset, setToolbarOffset] = useState({ x: 0, y: 0 });
+  const [isDraggingToolbar, setIsDraggingToolbar] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const toolbarDragStart = useRef({ x: 0, y: 0 });
 
   // Image dimension states to map object-contain coordinates exactly
   const [imgSize, setImgSize] = useState<{
@@ -217,6 +224,90 @@ export const CustomerPhotoLightbox = ({
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     imageRef.current = e.currentTarget;
     updateImageRect();
+  };
+
+  // Reset offset when lightbox opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setToolbarOffset({ x: 0, y: 0 });
+    }
+  }, [isOpen]);
+
+  // Adjust offset on window resize to keep the toolbar within bounds
+  useEffect(() => {
+    const handleResize = () => {
+      if (!toolbarRef.current) return;
+      const parentRect = toolbarRef.current.parentElement?.getBoundingClientRect();
+      if (!parentRect) return;
+
+      const rect = toolbarRef.current.getBoundingClientRect();
+      const defaultLeft = (parentRect.width - rect.width) / 2;
+      const defaultTop = parentRect.height - 24 - rect.height;
+
+      const minX = -defaultLeft;
+      const maxX = parentRect.width - rect.width - defaultLeft;
+      const minY = -defaultTop;
+      const maxY = parentRect.height - rect.height - defaultTop;
+
+      setToolbarOffset((prev) => ({
+        x: Math.max(minX, Math.min(maxX, prev.x)),
+        y: Math.max(minY, Math.min(maxY, prev.y)),
+      }));
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleToolbarPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("input") ||
+      target.closest("textarea")
+    ) {
+      return;
+    }
+    setIsDraggingToolbar(true);
+    toolbarDragStart.current = {
+      x: e.clientX - toolbarOffset.x,
+      y: e.clientY - toolbarOffset.y,
+    };
+    if (toolbarRef.current) {
+      toolbarRef.current.setPointerCapture(e.pointerId);
+    }
+  };
+
+  const handleToolbarPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingToolbar || !toolbarRef.current) return;
+    const parentRect = toolbarRef.current.parentElement?.getBoundingClientRect();
+    if (!parentRect) return;
+
+    let newX = e.clientX - toolbarDragStart.current.x;
+    let newY = e.clientY - toolbarDragStart.current.y;
+
+    const rect = toolbarRef.current.getBoundingClientRect();
+    const defaultLeft = (parentRect.width - rect.width) / 2;
+    const defaultTop = parentRect.height - 24 - rect.height;
+
+    const minX = -defaultLeft;
+    const maxX = parentRect.width - rect.width - defaultLeft;
+    const minY = -defaultTop;
+    const maxY = parentRect.height - rect.height - defaultTop;
+
+    newX = Math.max(minX, Math.min(maxX, newX));
+    newY = Math.max(minY, Math.min(maxY, newY));
+
+    setToolbarOffset({ x: newX, y: newY });
+  };
+
+  const handleToolbarPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingToolbar) return;
+    setIsDraggingToolbar(false);
+    if (toolbarRef.current) {
+      toolbarRef.current.releasePointerCapture(e.pointerId);
+    }
   };
 
   // Drag and Select Canvas Events
@@ -483,10 +574,6 @@ export const CustomerPhotoLightbox = ({
   const fileName = getFileName(photo.url_anh);
   const hasThumbs = photos.length > 1;
 
-  // Dynamic Likes display calculation (uses mock values or is favorite)
-  const baseLikes = photo.ma_hinh_anh.charCodeAt(0) || 0;
-  const likesCount = photo.yeu_thich ? 1 + (baseLikes % 15) : baseLikes % 10;
-
   // Filter feedbacks into guest comments and photographer replies
   const commentsList = photo.phan_hoi || [];
   // Pinned comments: not matching default center coordinates (50, 50)
@@ -572,9 +659,8 @@ export const CustomerPhotoLightbox = ({
               alt={fileName}
               fill
               sizes="100vw"
-              className={`object-contain transition-opacity duration-300 select-none pointer-events-none ${
-                photo.bi_mo ? "blur-[6px]" : ""
-              }`}
+              className={`object-contain transition-opacity duration-300 select-none pointer-events-none ${photo.bi_mo ? "blur-[6px]" : ""
+                }`}
               priority
               onLoad={handleImageLoad}
             />
@@ -589,11 +675,10 @@ export const CustomerPhotoLightbox = ({
                   width: `${imgSize.width}px`,
                   height: `${imgSize.height}px`,
                 }}
-                className={`absolute rounded overflow-visible ${
-                  isDrawingMode
-                    ? "z-30 cursor-crosshair border border-emerald-500/25 bg-emerald-500/[0.02]"
-                    : "z-20 pointer-events-auto"
-                }`}
+                className={`absolute rounded overflow-visible ${isDrawingMode
+                  ? "z-30 cursor-crosshair border border-emerald-500/25 bg-emerald-500/[0.02]"
+                  : "z-20 pointer-events-auto"
+                  }`}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
@@ -681,11 +766,10 @@ export const CustomerPhotoLightbox = ({
                           width: `${fb.phan_tram_chieu_rong}%`,
                           height: `${fb.phan_tram_chieu_cao}%`,
                         }}
-                        className={`group border transition-all duration-300 z-30 flex items-center justify-center cursor-pointer ${
-                          isHighlighted || isHovered
-                            ? "border-emerald-400 bg-emerald-500/25 shadow-[0_0_15px_rgba(52,211,153,0.7)] scale-[1.02]"
-                            : "border-dashed border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-400 hover:bg-emerald-500/15"
-                        }`}
+                        className={`group border transition-all duration-300 z-30 flex items-center justify-center cursor-pointer ${isHighlighted || isHovered
+                          ? "border-emerald-400 bg-emerald-500/25 shadow-[0_0_15px_rgba(52,211,153,0.7)] scale-[1.02]"
+                          : "border-dashed border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-400 hover:bg-emerald-500/15"
+                          }`}
                         onMouseEnter={() => setHoveredPinId(fb.ma_phan_hoi)}
                         onMouseLeave={() => setHoveredPinId(null)}
                         onClick={() => {
@@ -705,11 +789,10 @@ export const CustomerPhotoLightbox = ({
                       >
                         {/* Point Marker */}
                         <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-transform duration-200 ${
-                            isHighlighted || isHovered
-                              ? "bg-emerald-400 text-black scale-110"
-                              : "bg-[#10b981] text-black"
-                          }`}
+                          className={`w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-transform duration-200 ${isHighlighted || isHovered
+                            ? "bg-emerald-400 text-black scale-110"
+                            : "bg-[#10b981] text-black"
+                            }`}
                         >
                           <span className="text-[10px] font-black">
                             <ImPushpin size={16} color="red" />
@@ -718,11 +801,10 @@ export const CustomerPhotoLightbox = ({
 
                         {/* Tooltip on Hover */}
                         <div
-                          className={`absolute bottom-full mb-2.5 transition-all duration-300 w-56 p-3 bg-[#05070a] border border-emerald-500/30 rounded-xl shadow-2xl z-50 text-left pointer-events-none select-none ${
-                            isHovered
-                              ? "opacity-100 translate-y-0 visible"
-                              : "opacity-0 translate-y-1 invisible"
-                          }`}
+                          className={`absolute bottom-full mb-2.5 transition-all duration-300 w-56 p-3 bg-[#05070a] border border-emerald-500/30 rounded-xl shadow-2xl z-50 text-left pointer-events-none select-none ${isHovered
+                            ? "opacity-100 translate-y-0 visible"
+                            : "opacity-0 translate-y-1 invisible"
+                            }`}
                         >
                           <div className="flex justify-between items-center border-b border-white/5 pb-1.5 mb-1.5">
                             <span className="text-[11.5px] font-extrabold text-white">
@@ -779,11 +861,10 @@ export const CustomerPhotoLightbox = ({
               <button
                 key={p.ma_hinh_anh}
                 onClick={() => onNavigate(idx)}
-                className={`flex-shrink-0 w-[60px] h-[42px] rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-200 relative p-0 bg-transparent ${
-                  idx === currentIndex
-                    ? "border-[#10b981] scale-105 shadow-md shadow-emerald-500/20 opacity-100"
-                    : "border-white/15 opacity-40 hover:opacity-80"
-                }`}
+                className={`flex-shrink-0 w-[60px] h-[42px] rounded-lg overflow-hidden border-2 cursor-pointer transition-all duration-200 relative p-0 bg-transparent ${idx === currentIndex
+                  ? "border-[#10b981] scale-105 shadow-md shadow-emerald-500/20 opacity-100"
+                  : "border-white/15 opacity-40 hover:opacity-80"
+                  }`}
               >
                 <Image
                   src={p.url_anh}
@@ -799,19 +880,31 @@ export const CustomerPhotoLightbox = ({
 
         {/* Bottom Floating Bar */}
         <div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-black/75 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-full flex items-center gap-3.5 shadow-2xl transition-all duration-300"
+          ref={toolbarRef}
+          onPointerDown={handleToolbarPointerDown}
+          onPointerMove={handleToolbarPointerMove}
+          onPointerUp={handleToolbarPointerUp}
+          style={{
+            transform: `translate(calc(-50% + ${toolbarOffset.x}px), ${toolbarOffset.y}px)`,
+            transition: isDraggingToolbar ? "none" : "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, background-color 0.2s",
+          }}
+          className="absolute bottom-6 left-1/2 z-40 bg-black/75 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-full flex items-center gap-3.5 shadow-2xl select-none"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Drag Handle */}
+          <div className="text-white/40 cursor-grab active:cursor-grabbing hover:text-white/70 transition-colors p-0.5 flex items-center justify-center">
+            <GripVertical size={16} />
+          </div>
+
           {/* Favorite heart circle */}
           <button
             onClick={() =>
               onLikeToggle && onLikeToggle(photo.ma_hinh_anh, photo.yeu_thich)
             }
-            className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-sm ${
-              photo.yeu_thich
-                ? "bg-red-600 hover:bg-red-700 text-white shadow-red-600/20"
-                : "bg-white/10 hover:bg-white/20 text-white"
-            }`}
+            className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-sm ${photo.yeu_thich
+              ? "bg-red-600 hover:bg-red-700 text-white shadow-red-600/20"
+              : "bg-white/10 hover:bg-white/20 text-white"
+              }`}
             title={photo.yeu_thich ? "Bỏ yêu thích" : "Yêu thích"}
           >
             <Heart size={16} fill={photo.yeu_thich ? "white" : "none"} />
@@ -831,11 +924,10 @@ export const CustomerPhotoLightbox = ({
           {/* Comments Toggle */}
           <button
             onClick={() => setIsCommentsOpen(!isCommentsOpen)}
-            className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer border ${
-              isCommentsOpen
-                ? "bg-[#10b981]/15 border-[#10b981] text-[#34d399] shadow-md shadow-emerald-500/10"
-                : "bg-white/10 hover:bg-white/20 border-transparent text-white"
-            }`}
+            className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer border ${isCommentsOpen
+              ? "bg-[#10b981]/15 border-[#10b981] text-[#34d399] shadow-md shadow-emerald-500/10"
+              : "bg-white/10 hover:bg-white/20 border-transparent text-white"
+              }`}
             title="Nhận xét"
           >
             <MessageSquare size={16} />
@@ -850,11 +942,10 @@ export const CustomerPhotoLightbox = ({
                 setActiveSelection(null);
               }
             }}
-            className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer border ${
-              isDrawingMode
-                ? "bg-[#10b981]/15 border-[#10b981] text-[#34d399]"
-                : "bg-white/10 hover:bg-white/20 border-transparent text-white"
-            }`}
+            className={`w-9.5 h-9.5 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer border ${isDrawingMode
+              ? "bg-[#10b981]/15 border-[#10b981] text-[#34d399]"
+              : "bg-white/10 hover:bg-white/20 border-transparent text-white"
+              }`}
             title={
               isDrawingMode ? "Hủy khoanh vùng" : "Khoanh vùng và ghim nhận xét"
             }
@@ -865,7 +956,6 @@ export const CustomerPhotoLightbox = ({
           {/* Likes indicator badge */}
           <div className="h-9.5 px-3 rounded-full bg-white/5 border border-white/10 flex items-center gap-1.5 text-[12.5px] text-white font-bold select-none">
             <span className="text-red-500">❤️</span>
-            <span>{likesCount}</span>
           </div>
         </div>
 
@@ -945,15 +1035,14 @@ export const CustomerPhotoLightbox = ({
                         setHighlightedPinId(fb.ma_phan_hoi);
                       }
                     }}
-                    className={`group p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${
-                      isReply
-                        ? "ml-6 bg-[#0c1411]/50 border-emerald-950/40"
-                        : isSelected
-                          ? "bg-[#0c1411]/80 border-emerald-500/50 shadow-md shadow-emerald-500/[0.04]"
-                          : isHovered
-                            ? "bg-white/[0.02] border-emerald-500/30"
-                            : "bg-[#060a0d] border-white/5"
-                    }`}
+                    className={`group p-3.5 rounded-xl border transition-all duration-200 cursor-pointer ${isReply
+                      ? "ml-6 bg-[#0c1411]/50 border-emerald-950/40"
+                      : isSelected
+                        ? "bg-[#0c1411]/80 border-emerald-500/50 shadow-md shadow-emerald-500/[0.04]"
+                        : isHovered
+                          ? "bg-white/[0.02] border-emerald-500/30"
+                          : "bg-[#060a0d] border-white/5"
+                      }`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-1.5">
@@ -1046,11 +1135,10 @@ export const CustomerPhotoLightbox = ({
 
                       {isPinned && (
                         <span
-                          className={`text-[9.5px] font-extrabold flex items-center gap-0.5 ${
-                            isSelected
-                              ? "text-emerald-400"
-                              : "text-slate-500 hover:text-emerald-400"
-                          }`}
+                          className={`text-[9.5px] font-extrabold flex items-center gap-0.5 ${isSelected
+                            ? "text-emerald-400"
+                            : "text-slate-500 hover:text-emerald-400"
+                            }`}
                         >
                           📌 Xem vùng ghim
                         </span>

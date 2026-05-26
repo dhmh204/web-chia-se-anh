@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
@@ -33,11 +33,161 @@ const CommentsListModal = ({
   );
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+  // Pinned feedback coordinates visual overlay refs and state
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [imgSize, setImgSize] = useState<{
+    width: number;
+    height: number;
+    left: number;
+    top: number;
+  } | null>(null);
+
+  // Check if feedback coordinate is pinned (different from default 50, 50)
+  const isPinned = !!(feedback && (
+    feedback.toa_do_X !== 50 ||
+    feedback.toa_do_Y !== 50 ||
+    feedback.phan_tram_chieu_rong !== 10 ||
+    feedback.phan_tram_chieu_cao !== 10
+  ));
+
+  const updateImageRect = useCallback(() => {
+    if (!containerRef.current || !imageRef.current) return;
+    const parentRect = containerRef.current.getBoundingClientRect();
+    const containerWidth = parentRect.width;
+    const containerHeight = parentRect.height;
+
+    const imgW = imageRef.current.naturalWidth;
+    const imgH = imageRef.current.naturalHeight;
+
+    if (!imgW || !imgH) return;
+
+    const r_img = imgW / imgH;
+    const r_cont = containerWidth / containerHeight;
+
+    let width = 0;
+    let height = 0;
+    let left = 0;
+    let top = 0;
+
+    if (r_img > r_cont) {
+      width = containerWidth;
+      height = containerWidth / r_img;
+      left = 0;
+      top = (containerHeight - height) / 2;
+    } else {
+      height = containerHeight;
+      width = containerHeight * r_img;
+      left = (containerWidth - width) / 2;
+      top = 0;
+    }
+
+    setImgSize({ width, height, left, top });
+  }, []);
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    imageRef.current = e.currentTarget;
+    updateImageRect();
+  };
+
+  // Full-screen visual preview state and refs
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
+  const fullScreenContainerRef = useRef<HTMLDivElement>(null);
+  const fullScreenImageRef = useRef<HTMLImageElement | null>(null);
+  const [fullScreenImgSize, setFullScreenImgSize] = useState<{
+    width: number;
+    height: number;
+    left: number;
+    top: number;
+  } | null>(null);
+
+  const updateFullScreenImageRect = useCallback(() => {
+    if (!fullScreenContainerRef.current || !fullScreenImageRef.current) return;
+    const parentRect = fullScreenContainerRef.current.getBoundingClientRect();
+    const containerWidth = parentRect.width;
+    const containerHeight = parentRect.height;
+
+    const imgW = fullScreenImageRef.current.naturalWidth;
+    const imgH = fullScreenImageRef.current.naturalHeight;
+
+    if (!imgW || !imgH) return;
+
+    const r_img = imgW / imgH;
+    const r_cont = containerWidth / containerHeight;
+
+    let width = 0;
+    let height = 0;
+    let left = 0;
+    let top = 0;
+
+    if (r_img > r_cont) {
+      width = containerWidth;
+      height = containerWidth / r_img;
+      left = 0;
+      top = (containerHeight - height) / 2;
+    } else {
+      height = containerHeight;
+      width = containerHeight * r_img;
+      left = (containerWidth - width) / 2;
+      top = 0;
+    }
+
+    setFullScreenImgSize({ width, height, left, top });
+  }, []);
+
+  const handleFullScreenImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    fullScreenImageRef.current = e.currentTarget;
+    updateFullScreenImageRect();
+  };
+
   useEffect(() => {
+    setImgSize(null);
+    imageRef.current = null;
+    setFullScreenImgSize(null);
+    fullScreenImageRef.current = null;
+    setIsFullScreenOpen(false);
     if (feedback) {
       setCurrentStatus(feedback.trang_thai);
     }
-  }, [feedback]);
+  }, [feedback, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !feedback?.hinh_anh) return;
+
+    const handleResize = () => {
+      updateImageRect();
+    };
+
+    window.addEventListener("resize", handleResize);
+    // Add timeouts to handle layout settling and transition reflows
+    const t1 = setTimeout(updateImageRect, 50);
+    const t2 = setTimeout(updateImageRect, 150);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isOpen, feedback, updateImageRect]);
+
+  useEffect(() => {
+    if (!isFullScreenOpen || !feedback?.hinh_anh) return;
+
+    const handleResize = () => {
+      updateFullScreenImageRect();
+    };
+
+    window.addEventListener("resize", handleResize);
+    // Add timeouts to handle layout settling and transition reflows
+    const t1 = setTimeout(updateFullScreenImageRect, 50);
+    const t2 = setTimeout(updateFullScreenImageRect, 150);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isFullScreenOpen, feedback, updateFullScreenImageRect]);
 
   const handleStatusChange = async (newStatus: "CHUA_XU_LY" | "DANG_XU_LY" | "DA_XU_LY") => {
     if (!feedback || isUpdatingStatus) return;
@@ -202,16 +352,49 @@ const CommentsListModal = ({
       <div className="flex flex-col gap-4">
         {/* Photo preview */}
         {feedback.hinh_anh ? (
-          <div className="relative w-full h-[240px] rounded-[14px] overflow-hidden bg-black/50 border border-white/10 group flex items-center justify-center">
+          <div
+            ref={containerRef}
+            onClick={() => setIsFullScreenOpen(true)}
+            className="relative w-full h-[240px] rounded-[14px] overflow-hidden bg-black/50 border border-white/10 group flex items-center justify-center cursor-zoom-in"
+          >
             <Image
               src={feedback.hinh_anh.url_anh}
               alt={photoName}
               fill
               sizes="(max-width: 600px) 100vw, 560px"
-              className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+              className="object-contain"
+              onLoad={handleImageLoad}
             />
+
+            {/* Drawing/Feedback Overlay */}
+            {imgSize && isPinned && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${imgSize.left}px`,
+                  top: `${imgSize.top}px`,
+                  width: `${imgSize.width}px`,
+                  height: `${imgSize.height}px`,
+                }}
+                className="absolute z-20 pointer-events-none"
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    left: `${feedback.toa_do_X}%`,
+                    top: `${feedback.toa_do_Y}%`,
+                    width: `${feedback.phan_tram_chieu_rong}%`,
+                    height: `${feedback.phan_tram_chieu_cao}%`,
+                  }}
+                  className="border-2 border-dashed border-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.7)] flex items-center justify-center animate-pulse"
+                >
+                  <span className="text-[14px] drop-shadow-md">📌</span>
+                </div>
+              </div>
+            )}
+
             {/* Soft gradient overlay at the bottom */}
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 pt-10 flex items-end justify-between">
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 pt-10 flex items-end justify-between z-30">
               <div className="flex flex-col gap-1 min-w-0 pr-4">
                 <span className="text-[13.5px] text-white font-bold truncate drop-shadow-md">
                   {photoName}
@@ -226,10 +409,11 @@ const CommentsListModal = ({
                 href={feedback.hinh_anh.url_anh}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-shrink-0 bg-white/10 hover:bg-[#10b981] hover:text-white border border-white/10 px-3 py-1.5 rounded-[8px] text-[12px] text-slate-200 transition-all duration-300 flex items-center gap-1.5 font-medium backdrop-blur-sm shadow-lg hover:shadow-[#10b981]/25"
+                onClick={(e) => e.stopPropagation()}
+                className="flex-shrink-0 bg-white/10 hover:bg-[#10b981] hover:text-white border border-white/10 px-3 py-1.5 rounded-[8px] text-[12px] text-slate-200 transition-all duration-300 flex items-center gap-1.5 font-medium backdrop-blur-sm shadow-lg hover:shadow-[#10b981]/25 z-40"
               >
                 <FaImage size={11} />
-                Mở ảnh gốc
+                Mở ảnh
               </a>
             </div>
           </div>
@@ -388,41 +572,125 @@ const CommentsListModal = ({
             </div>
           </div>
         </form>
-      {/* CUSTOM CONFIRM DELETE COMMENT MODAL */}
-      {confirmDeleteId && (
-        <Modal
-          title="Xác nhận xóa nhận xét"
-          kicker="CẢNH BÁO"
-          onClose={() => setConfirmDeleteId(null)}
-          widthClass="w-[min(420px,100%)]"
+        {/* CUSTOM CONFIRM DELETE COMMENT MODAL */}
+        {confirmDeleteId && (
+          <Modal
+            title="Xác nhận xóa nhận xét"
+            kicker="CẢNH BÁO"
+            onClose={() => setConfirmDeleteId(null)}
+            widthClass="w-[min(420px,100%)]"
+          >
+            <div className="flex flex-col gap-4 text-[14px] p-1">
+              <p className="text-slate-300 leading-relaxed">
+                Bạn có chắc chắn muốn xóa nhận xét này?
+              </p>
+              <p className="text-red-400/90 text-[12px] leading-relaxed">
+                * Nhận xét và toàn bộ nội dung trao đổi đi kèm sẽ bị xóa vĩnh viễn khỏi hệ thống.
+              </p>
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-white/5">
+                <Button
+                  variant="secondary"
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="min-h-[38px] px-4 rounded-[11px] text-[13px]"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleConfirmDeleteComment}
+                  className="min-h-[38px] px-5 rounded-[11px] text-[13px] bg-red-600 text-white hover:bg-red-700"
+                >
+                  Đồng ý xóa
+                </Button>
+              </div>
+            </div>
+          </Modal>
+        )}
+      </div>
+
+      {/* Full-screen inspector */}
+      {isFullScreenOpen && feedback.hinh_anh && (
+        <div
+          className="fixed inset-0 z-[200000] bg-black/95 flex flex-col justify-between select-none animate-fade-in"
+          onClick={() => setIsFullScreenOpen(false)}
         >
-          <div className="flex flex-col gap-4 text-[14px] p-1">
-            <p className="text-slate-300 leading-relaxed">
-              Bạn có chắc chắn muốn xóa nhận xét này?
-            </p>
-            <p className="text-red-400/90 text-[12px] leading-relaxed">
-              * Nhận xét và toàn bộ nội dung trao đổi đi kèm sẽ bị xóa vĩnh viễn khỏi hệ thống.
-            </p>
-            <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-white/5">
-              <Button 
-                variant="secondary" 
-                onClick={() => setConfirmDeleteId(null)}
-                className="min-h-[38px] px-4 rounded-[11px] text-[13px]"
-              >
-                Hủy
-              </Button>
-              <Button 
-                variant="danger" 
-                onClick={handleConfirmDeleteComment}
-                className="min-h-[38px] px-5 rounded-[11px] text-[13px] bg-red-600 text-white hover:bg-red-700"
-              >
-                Đồng ý xóa
-              </Button>
+          {/* Header Bar */}
+          <header className="flex justify-between items-center px-6 py-4 border-b border-white/5 bg-[#050706]/60 backdrop-blur-md z-10" onClick={(e) => e.stopPropagation()}>
+            <div>
+              <h3 className="text-white font-extrabold text-[15px] truncate max-w-[280px] sm:max-w-md">
+                {photoName}
+              </h3>
+              <p className="text-[12px] text-slate-400 font-semibold mt-0.5">
+                Nhận xét từ {feedback.nguoi_binh_luan}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsFullScreenOpen(false)}
+              className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:border-red-950/40 hover:bg-red-950/10 hover:text-red-400 transition-all cursor-pointer"
+            >
+              <FaTimes size={16} />
+            </button>
+          </header>
+
+          {/* Image Workspace Canvas */}
+          <div className="flex-1 flex items-center justify-center px-4 sm:px-12 relative overflow-hidden" onClick={() => setIsFullScreenOpen(false)}>
+            <div
+              ref={fullScreenContainerRef}
+              className="relative w-full h-full max-w-[85%] max-h-[85%]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={feedback.hinh_anh.url_anh}
+                alt={photoName}
+                fill
+                sizes="100vw"
+                className="object-contain select-none"
+                onLoad={handleFullScreenImageLoad}
+              />
+
+              {/* Highlight Coordinates Box */}
+              {fullScreenImgSize && isPinned && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: `${fullScreenImgSize.left}px`,
+                    top: `${fullScreenImgSize.top}px`,
+                    width: `${fullScreenImgSize.width}px`,
+                    height: `${fullScreenImgSize.height}px`,
+                  }}
+                  className="absolute z-20 pointer-events-none"
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: `${feedback.toa_do_X}%`,
+                      top: `${feedback.toa_do_Y}%`,
+                      width: `${feedback.phan_tram_chieu_rong}%`,
+                      height: `${feedback.phan_tram_chieu_cao}%`,
+                    }}
+                    className="border-2 border-dashed border-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.7)] flex items-center justify-center animate-pulse"
+                  >
+                    <span className="text-[18px] drop-shadow-md">📌</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </Modal>
+
+          {/* Floating Context Banner */}
+          <footer className="border-t border-white/5 bg-[#050706]/85 backdrop-blur-md p-5 z-10" onClick={(e) => e.stopPropagation()}>
+            <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#34d399] bg-[#10b981]/15 border border-[#10b981]/25 px-3 py-1 rounded-full">
+                Yêu cầu sửa từ {feedback.nguoi_binh_luan}
+              </span>
+              <p className="text-slate-200 mt-3 text-[14.5px] leading-relaxed italic font-semibold">
+                "{feedback.phan_hoi}"
+              </p>
+            </div>
+          </footer>
+        </div>
       )}
-      </div>
     </Modal>
   );
 };

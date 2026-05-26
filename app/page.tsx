@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import LandingClient from "./(customer)/LandingClient";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/login");
+    return <LandingClient />;
   }
 
   const role = (session.user as any)?.vai_tro;
@@ -16,7 +17,7 @@ export default async function Home() {
   } else if (role === "THO_ANH") {
     redirect("/photographer");
   } else {
-    // Nếu có role khác (hoặc chưa define) thì có thể tuỳ chọn redirect, ở đây cho vào login
-    redirect("/login");
+    // Nếu có role khác (hoặc chưa define) thì hiển thị landing page
+    return <LandingClient />;
   }
 }

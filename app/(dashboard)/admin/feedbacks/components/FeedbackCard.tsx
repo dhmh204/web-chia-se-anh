@@ -104,7 +104,10 @@ const FeedbackCard = ({
   }
 
   return (
-    <div className="bg-[rgba(255,255,255,0.015)] border border-[rgba(255,255,255,0.06)] rounded-[18px] p-5 flex flex-col md:flex-row gap-5 items-start justify-between hover:border-[#10b981]/30 transition-all duration-300">
+    <div
+      onClick={() => onOpenReplies(feedback)}
+      className="bg-[rgba(255,255,255,0.015)] border border-[rgba(255,255,255,0.06)] rounded-[18px] p-5 flex flex-col md:flex-row gap-5 items-start justify-between hover:border-[#10b981]/30 transition-all duration-300 cursor-pointer select-none"
+    >
       <div className="flex gap-4 items-start flex-1 w-full">
         {/* Photo Thumbnail */}
         <div className="w-[80px] h-[80px] rounded-[12px] relative overflow-hidden bg-black/40 border border-white/5 flex-shrink-0">
@@ -186,11 +189,14 @@ const FeedbackCard = ({
           className={`${badgeOverrideClass} text-[11px] h-[26px]`}
         />
 
-        <div className=" md:flex-col gap-2 w-full md:w-auto mt-2 md:mt-0">
+        <div className="flex  gap-2 w-full md:w-auto mt-2 md:mt-0">
           <Button
             variant="secondary"
             className="flex-1 md:w-[130px] min-h-[34px] text-[12.5px] rounded-[10px] border-white/5 hover:border-white/20 text-slate-200"
-            onClick={() => onOpenReplies(feedback)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenReplies(feedback);
+            }}
           >
             Thêm phản hồi
           </Button>
@@ -198,7 +204,10 @@ const FeedbackCard = ({
           <Button
             variant="secondary"
             className="flex-1 md:w-[130px] min-h-[34px] text-[12.5px] rounded-[10px] border-white/5 hover:border-white/20 text-slate-200"
-            onClick={() => onOpenStatusChange(feedback)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenStatusChange(feedback);
+            }}
           >
             Đổi trạng thái
           </Button>

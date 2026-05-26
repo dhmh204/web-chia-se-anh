@@ -21,7 +21,7 @@ const FeedbacksClient = ({ initialFeedbacks }: FeedbacksClientProps) => {
 
   // Modal triggers
   const [repliesModalFeedback, setRepliesModalFeedback] = useState<FeedbackType | null>(null);
-  
+
   const searchParams = useSearchParams();
   const focusId = searchParams.get("focus");
 
@@ -134,11 +134,10 @@ const FeedbacksClient = ({ initialFeedbacks }: FeedbacksClientProps) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`h-[36px] px-4 rounded-[999px] text-[13.5px] font-semibold transition-all duration-200 cursor-pointer ${
-                  activeTab === tab.id
+                className={`h-[36px] px-4 rounded-[999px] text-[13.5px] font-semibold transition-all duration-200 cursor-pointer ${activeTab === tab.id
                     ? "bg-[#10b981]/15 text-[#34d399] border border-[#10b981]/30 font-bold"
                     : "text-[var(--muted)] hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -216,11 +215,10 @@ const FeedbacksClient = ({ initialFeedbacks }: FeedbacksClientProps) => {
                   key={status.id}
                   type="button"
                   onClick={() => setTempStatus(status.id as any)}
-                  className={`p-3.5 rounded-[15px] border text-left cursor-pointer transition-all duration-200 flex flex-col gap-1 ${
-                    tempStatus === status.id
+                  className={`p-3.5 rounded-[15px] border text-left cursor-pointer transition-all duration-200 flex flex-col gap-1 ${tempStatus === status.id
                       ? status.activeClass
                       : `border-[var(--line)] bg-[var(--field-bg)] text-slate-300 ${status.colorClass}`
-                  }`}
+                    }`}
                 >
                   <strong className="text-[14px] font-bold">{status.label}</strong>
                   <span className="text-[11.5px] opacity-80 leading-normal">{status.desc}</span>

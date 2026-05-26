@@ -8,115 +8,9 @@ type RecentlyAlbumProps = {
   albums?: AlbumWithProject[];
 };
 
-const mockAlbums: AlbumWithProject[] = [
-  {
-    ma_album: "mock-1",
-    ten_alb: "Kỷ yếu khóa 12A1",
-    loai_alb: "ANH_GOC",
-    quyen_download: true,
-    du_an: {
-      ten_du_an: "Kỷ yếu THPT Phan Chu Trinh 2026",
-      mat_khau: "12A1-2026",
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 184 },
-  },
-  {
-    ma_album: "mock-2",
-    ten_alb: "Dự án chụp ảnh ngoại cảnh",
-    loai_alb: "HAU_KY",
-    quyen_download: false,
-    du_an: {
-      ten_du_an: "Chụp ảnh cưới Gia Huy & Minh Thư",
-      mat_khau: "cuoi-2026",
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 92 },
-  },
-  {
-    ma_album: "mock-3",
-    ten_alb: "Chân dung nghệ thuật",
-    loai_alb: "CUOI_CUNG",
-    quyen_download: true,
-    du_an: {
-      ten_du_an: "Profile cá nhân CEO Hoàng Nam",
-      mat_khau: null,
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 45 },
-  },
-  {
-    ma_album: "mock-4",
-    ten_alb: "Ảnh gốc tiệc cưới",
-    loai_alb: "ANH_GOC",
-    quyen_download: false,
-    du_an: {
-      ten_du_an: "Đám cưới Minh Quân & Thảo Vy",
-      mat_khau: "quanvy-wedding",
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 520 },
-  },
-  {
-    ma_album: "mock-5",
-    ten_alb: "Hậu kỳ phóng sự cưới",
-    loai_alb: "HAU_KY",
-    quyen_download: true,
-    du_an: {
-      ten_du_an: "Đám cưới Minh Quân & Thảo Vy",
-      mat_khau: "quanvy-wedding",
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 120 },
-  },
-  {
-    ma_album: "mock-6",
-    ten_alb: "Sự kiện Year End Party",
-    loai_alb: "CUOI_CUNG",
-    quyen_download: true,
-    du_an: {
-      ten_du_an: "YEP 2025 - Công ty Antigravity Corp",
-      mat_khau: "yep-2025",
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 310 },
-  },
-  {
-    ma_album: "mock-7",
-    ten_alb: "Ảnh chụp gia đình",
-    loai_alb: "ANH_GOC",
-    quyen_download: false,
-    du_an: {
-      ten_du_an: "Kỷ niệm 10 năm ngày cưới gia đình anh Tuấn",
-      mat_khau: "tuan10nam",
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 78 },
-  },
-  {
-    ma_album: "mock-8",
-    ten_alb: "Fashion Lookbook",
-    loai_alb: "CUOI_CUNG",
-    quyen_download: true,
-    du_an: {
-      ten_du_an: "Bộ sưu tập Hè 2026 - LSEOUL",
-      mat_khau: null,
-      link_anh_bia: null,
-    },
-    hinh_anh: [],
-    _count: { hinh_anh: 64 },
-  },
-];
 
 const RecentlyAlbum = ({ albums }: RecentlyAlbumProps) => {
-  const displayAlbums = albums && albums.length > 0 ? albums : mockAlbums;
+  const displayAlbums = albums || [];
   const [currentPage, setCurrentPage] = useState(0);
 
   const itemsPerPage = 3;
@@ -140,6 +34,14 @@ const RecentlyAlbum = ({ albums }: RecentlyAlbumProps) => {
       setCurrentPage((prev) => prev - 1);
     }
   };
+
+  if (displayAlbums.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 border border-dashed border-white/10 rounded-2xl bg-white/[0.01] text-center">
+        <p className="text-[var(--muted)] text-[14px]">Chưa có album nào được tạo gần đây.</p>
+      </div>
+    );
+  }
 
   // Chunk items into pages
   const pages: AlbumWithProject[][] = [];
@@ -214,11 +116,10 @@ const RecentlyAlbum = ({ albums }: RecentlyAlbumProps) => {
             <button
               key={index}
               onClick={() => setCurrentPage(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                currentPage === index
-                  ? "w-6 bg-[var(--green)]"
-                  : "w-2 bg-[rgba(255,255,255,0.15)] hover:bg-[rgba(255,255,255,0.35)]"
-              }`}
+              className={`h-2 rounded-full transition-all duration-300 ${currentPage === index
+                ? "w-6 bg-[var(--green)]"
+                : "w-2 bg-[rgba(255,255,255,0.15)] hover:bg-[rgba(255,255,255,0.35)]"
+                }`}
               title={`Tới trang ${index + 1}`}
             />
           ))}

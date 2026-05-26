@@ -118,10 +118,7 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
     }
   };
 
-  const getMockLikesCount = (photoId: string, isFav: boolean) => {
-    const code = photoId.charCodeAt(0) || 0;
-    return isFav ? 1 + (code % 15) : code % 10;
-  };
+
 
   const getFilteredPhotos = () => {
     let result = photos;
@@ -181,9 +178,11 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
   const activeLightboxPhoto =
     lightboxIndex !== null ? filteredPhotos[lightboxIndex] : null;
 
+
+
+
   return (
-    <div className="min-h-screen bg-[#03070a] text-[#f8fafc] flex flex-col pb-20 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-emerald-950/15 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen  flex flex-col pb-20 relative overflow-hidden p-7">
 
       <AlbumBanner
         ten_alb={album.ten_alb}
@@ -192,13 +191,13 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
         totalFeedback={stats.totalFeedback}
       />
 
-      <main className="p-7">
+      <main>
         <AlbumSearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
 
-        <div className="flex gap-2.5 overflow-x-auto pb-4 no-scrollbar border-b border-[var(--line)] mb-8">
+        <div className="flex gap-2.5 mb-4 flex-wrap">
           {[
             { id: "all", label: "Tất cả" },
             { id: "favorites", label: "Ảnh yêu thích" },
@@ -214,11 +213,10 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
                   setActiveTab(tab.id as any);
                   setSelectedPersonId(null);
                 }}
-                className={`py-2 px-5 rounded-[12px] text-[13.5px] font-bold transition-all duration-200 whitespace-nowrap cursor-pointer ${
-                  isActive
-                    ? "bg-[rgba(16,185,129,0.12)] border border-[var(--line-green)] text-[var(--green-2)]"
-                    : "bg-[#060a0d] border border-[var(--line)] text-[var(--muted)] hover:text-white hover:bg-white/[0.04]"
-                }`}
+                className={` font-light cursor-pointer min-h-[38px] px-3.5 rounded-[9999px] text-[var(--muted)] bg-[rgba(255,255,255,.04)] border border-[var(--line)] ${isActive
+                  ? "text-white border-[var(--line-green)] bg-[rgba(16,185,129,.14)]"
+                  : ""
+                  }`}
               >
                 {tab.label}
               </button>
@@ -285,10 +283,6 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
                       photo={photo}
                       filename={filename}
                       status={status}
-                      mockLikesCount={getMockLikesCount(
-                        photo.ma_hinh_anh,
-                        photo.yeu_thich,
-                      )}
                       onOpenLightbox={() =>
                         handleOpenLightbox(photo.ma_hinh_anh)
                       }
@@ -332,11 +326,11 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
               prev.map((p) =>
                 p.ma_hinh_anh === photoId
                   ? {
-                      ...p,
-                      phan_hoi: p.phan_hoi.filter(
-                        (f) => f.ma_phan_hoi !== feedbackId,
-                      ),
-                    }
+                    ...p,
+                    phan_hoi: p.phan_hoi.filter(
+                      (f) => f.ma_phan_hoi !== feedbackId,
+                    ),
+                  }
                   : p,
               ),
             );
@@ -346,13 +340,13 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
               prev.map((p) =>
                 p.ma_hinh_anh === photoId
                   ? {
-                      ...p,
-                      phan_hoi: p.phan_hoi.map((f) =>
-                        f.ma_phan_hoi === updatedFeedback.ma_phan_hoi
-                          ? updatedFeedback
-                          : f,
-                      ),
-                    }
+                    ...p,
+                    phan_hoi: p.phan_hoi.map((f) =>
+                      f.ma_phan_hoi === updatedFeedback.ma_phan_hoi
+                        ? updatedFeedback
+                        : f,
+                    ),
+                  }
                   : p,
               ),
             );
