@@ -13,7 +13,7 @@ import {
   FaCamera,
   FaUser,
 } from "react-icons/fa";
-import { IoGrid, IoSparkles } from "react-icons/io5";
+import { IoChatbubbleEllipsesSharp, IoCloudSharp, IoGrid, IoSparkles } from "react-icons/io5";
 
 type DashboardRole = "admin" | "photographer";
 
@@ -95,27 +95,39 @@ const photographerMenus: MenuItem[] = [
   },
   {
     icon: FaCamera,
-    label: "Dự án của tôi",
+    label: "Dự án được giao",
     href: "/photographer/projects",
     colorIcon: "#ffd059",
   },
   {
     icon: FaImages,
-    label: "Album được giao",
+    label: "Album của tôi",
     href: "/photographer/albums",
     colorIcon: "#60a5fa",
+  },
+  {
+    icon: IoCloudSharp ,
+    label: "Upload ảnh",
+    href: "/photographer/photos",
+    colorIcon: "var(--green-2)",
+  },
+  {
+    icon: FaCommentDots ,
+    label: "Phản hồi ảnh",
+    href: "/photographer/feedbacks",
+    colorIcon: "#f1eaf6",
+  },
+    {
+    icon: FaBolt,
+    label: "Ảnh khách yêu thích",
+    href: "/photographer/favorites",
+    colorIcon: "#fb923c",
   },
   {
     icon: FaBolt,
     label: "Tiến độ hậu kỳ",
     href: "/photographer/progress",
     colorIcon: "#fb923c",
-  },
-  {
-    icon: FaCommentDots,
-    label: "Phản hồi cần xử lý",
-    href: "/photographer/feedbacks",
-    colorIcon: "#f1eaf6",
   },
 ];
 
@@ -135,7 +147,6 @@ const SidebarMenu = ({ role }: SidebarMenuProps) => {
 
     return pathname.startsWith(href);
   };
-
   return (
     <nav className="grid gap-[6px]">
       {menus.map((item) => {

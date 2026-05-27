@@ -10,6 +10,7 @@ type PanelProp = {
   variant?: "primary" | "secondary" | "sm" | "outline" | "danger";
   children: React.ReactNode;
   onClick?: () => void;
+  download?: boolean;
 };
 
 const Panel = ({
@@ -21,6 +22,7 @@ const Panel = ({
   variant = "sm",
   children,
   onClick,
+  download = true,
 }: PanelProp) => {
   return (
     <div className="mb-[18px] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] p-[22px] shadow-[var(--shadow)] backdrop-blur-[16px]">
@@ -38,7 +40,7 @@ const Panel = ({
         </div>
         {textButton &&
           (hrefButton ? (
-            <a href={hrefButton} download>
+            <a href={hrefButton} download={download}>
               <Button variant={variant}>{textButton}</Button>
             </a>
           ) : (
