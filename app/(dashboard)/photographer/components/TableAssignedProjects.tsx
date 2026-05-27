@@ -33,7 +33,7 @@ const headers = ["Dự án", "ALbum", "Ảnh", "Phản hồi", "Trạng thái", 
         </td>
        {
           isDetails && (
-            <td>
+            <td className='flex gap-[8px] flex-wrap'>
               <Button href="/" variant="sm">
                 Album
               </Button>

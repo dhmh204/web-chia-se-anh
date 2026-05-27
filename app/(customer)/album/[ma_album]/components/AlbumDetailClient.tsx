@@ -189,6 +189,8 @@ const AlbumDetailClient = ({ album, stats }: AlbumDetailClientProps) => {
         totalPhotos={stats.totalPhotos}
         totalFavorites={currentFavoritesCount}
         totalFeedback={stats.totalFeedback}
+        description="  Xem ảnh, tìm kiếm theo ngữ nghĩa/khuôn mặt, lọc ảnh, yêu thích ảnh
+          và gửi phản hồi chỉnh sửa trực tiếp cho studio."
       />
 
       <main>

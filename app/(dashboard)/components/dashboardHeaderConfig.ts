@@ -59,6 +59,13 @@ export const dashboardHeaderConfig = {
     title: "Danh sách album",
   },
 
+    //Noteeeeeeeeeeeeeeee
+    "/photographer/albums/[ma_album]": {
+    sectionLabel: "Album được giao",
+    title: "Danh sách album",
+  },
+
+
   "/photographer/progress": {
     sectionLabel: "Tiến độ hậu kỳ",
     title: "Theo dõi tiến độ",
