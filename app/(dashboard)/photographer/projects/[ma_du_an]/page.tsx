@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import ProjectDetailClient from "./components/ProjectDetailClient";
+import ProjectDetailClient from "@/app/(dashboard)/admin/projects/[ma_du_an]/components/ProjectDetailClient";
 
 export const revalidate = 0;
 
@@ -133,7 +133,7 @@ const AdminProjectDetailPage = async ({ params }: PageProps) => {
       project={serializedProject}
       photographers={photographersList}
       stats={stats}
-
+      role="photographer"
     />
   );
 };

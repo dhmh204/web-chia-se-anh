@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
+import { sendAccountCreationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -195,6 +196,19 @@ export async function POST(request: NextRequest) {
               anh_dai_dien: true,
             },
           });
+
+          // Gửi email thông tin tài khoản cho người dùng
+          try {
+            await sendAccountCreationEmail({
+              to: email,
+              name: ho_va_ten,
+              role: vai_tro,
+              password: matKhauTam,
+            });
+            console.log("Account email sent successfully to", email);
+          } catch (mailErr) {
+            console.error("Failed to send account creation email:", mailErr);
+          }
 
           // Gửi phản hồi thành công cuối cùng
           controller.enqueue(

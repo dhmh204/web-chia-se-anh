@@ -29,12 +29,14 @@ type PhotosClientProps = {
   initialPhotos: PhotoType[];
   projects: ProjectOption[];
   albums: AlbumOption[];
+  initialTab?: "all" | "visible" | "hidden" | "blurred" | "favorites";
 };
 
 const PhotosClient = ({
   initialPhotos,
   projects,
   albums,
+  initialTab = "all",
 }: PhotosClientProps) => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,11 +46,15 @@ const PhotosClient = ({
   const [projectList, setProjectList] = useState<ProjectOption[]>(projects);
   const [albumList, setAlbumList] = useState<AlbumOption[]>(albums);
 
-  const [selectedProject, setSelectedProject] = useState<string>("all");
-  const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
+  const [selectedProject, setSelectedProject] = useState<string>(() => {
+    return projects.length === 1 ? projects[0].ma_du_an : "all";
+  });
+  const [selectedAlbum, setSelectedAlbum] = useState<string>(() => {
+    return albums.length === 1 ? albums[0].ma_album : "all";
+  });
   const [activeTab, setActiveTab] = useState<
     "all" | "visible" | "hidden" | "blurred" | "favorites"
-  >("all");
+  >(initialTab);
 
   // Upload and loading states
   const [isUploading, setIsUploading] = useState(false);
@@ -410,6 +416,7 @@ const PhotosClient = ({
           phan_tram_chieu_cao: Number(data.feedback.phan_tram_chieu_cao) || 10,
           ma_tho_anh: data.feedback.ma_tho_anh,
           trang_thai: data.feedback.trang_thai || "CHUA_XU_LY",
+          tho_anh: data.feedback.tho_anh,
         };
 
         setPhotos((prev) =>

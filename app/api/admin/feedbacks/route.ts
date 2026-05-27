@@ -8,11 +8,35 @@ export const runtime = "nodejs";
 // GET: Fetch guest comments and their photographer replies
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { message: "Bạn chưa đăng nhập" },
+        { status: 401 }
+      );
+    }
+
+    const whereClause: any = {
+      ma_tho_anh: null,
+    };
+
+    if (session.user.vai_tro === "THO_ANH") {
+      whereClause.hinh_anh = {
+        album: {
+          du_an: {
+            su_phan_cong: {
+              some: {
+                ma_nguoi_dung: session.user.ma_nguoi_dung,
+              },
+            },
+          },
+        },
+      };
+    }
+
     // 1. Fetch guest comments (where ma_tho_anh is null)
     const guestComments = await prisma.phanHoi.findMany({
-      where: {
-        ma_tho_anh: null,
-      },
+      where: whereClause,
       include: {
         hinh_anh: {
           select: {
@@ -99,6 +123,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const image = await prisma.hinhAnh.findUnique({
+      where: { ma_hinh_anh },
+      include: { album: true },
+    });
+
+    if (!image) {
+      return NextResponse.json(
+        { message: "Hình ảnh không tồn tại" },
+        { status: 404 }
+      );
+    }
+
+    if (session && session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: image.album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền phản hồi ảnh của dự án này" },
+          { status: 403 }
+        );
+      }
+    }
+
+    const userRole = session?.user?.vai_tro || null;
     const userId = session?.user?.ma_nguoi_dung || null;
     const userName = session?.user?.name || "Admin Studio";
 
@@ -106,7 +160,7 @@ export async function POST(request: NextRequest) {
       data: {
         ma_hinh_anh,
         phan_hoi: phan_hoi.trim(),
-        ma_tho_anh: userId,
+        ma_tho_anh: userRole === "THO_ANH" ? userId : null,
         nguoi_binh_luan: userId
           ? userName
           : (nguoi_binh_luan?.trim() || "Khách"),
@@ -158,6 +212,40 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    const feedback = await prisma.phanHoi.findUnique({
+      where: { ma_phan_hoi },
+      include: {
+        hinh_anh: {
+          include: { album: true },
+        },
+      },
+    });
+
+    if (!feedback) {
+      return NextResponse.json(
+        { message: "Phản hồi không tồn tại" },
+        { status: 404 }
+      );
+    }
+
+    const session = await getServerSession(authOptions);
+    if (session && session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: feedback.hinh_anh.album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền cập nhật phản hồi của dự án này" },
+          { status: 403 }
+        );
+      }
+    }
+
     const updatedFeedback = await prisma.phanHoi.update({
       where: { ma_phan_hoi },
       data: { trang_thai },
@@ -196,6 +284,40 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const feedback = await prisma.phanHoi.findUnique({
+      where: { ma_phan_hoi },
+      include: {
+        hinh_anh: {
+          include: { album: true },
+        },
+      },
+    });
+
+    if (!feedback) {
+      return NextResponse.json(
+        { message: "Phản hồi không tồn tại" },
+        { status: 404 }
+      );
+    }
+
+    const session = await getServerSession(authOptions);
+    if (session && session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: feedback.hinh_anh.album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền chỉnh sửa phản hồi của dự án này" },
+          { status: 403 }
+        );
+      }
+    }
+
     const updatedFeedback = await prisma.phanHoi.update({
       where: { ma_phan_hoi },
       data: { phan_hoi: phan_hoi.trim() },
@@ -225,6 +347,40 @@ export async function DELETE(request: NextRequest) {
         { message: "Mã phản hồi là bắt buộc" },
         { status: 400 }
       );
+    }
+
+    const feedback = await prisma.phanHoi.findUnique({
+      where: { ma_phan_hoi: id },
+      include: {
+        hinh_anh: {
+          include: { album: true },
+        },
+      },
+    });
+
+    if (!feedback) {
+      return NextResponse.json(
+        { message: "Phản hồi không tồn tại" },
+        { status: 404 }
+      );
+    }
+
+    const session = await getServerSession(authOptions);
+    if (session && session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: feedback.hinh_anh.album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền xóa phản hồi của dự án này" },
+          { status: 403 }
+        );
+      }
     }
 
     await prisma.phanHoi.delete({

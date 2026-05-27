@@ -28,6 +28,7 @@ export type AlbumWithProject = {
 
 type RecentlyAlbItemProps = {
   album: AlbumWithProject;
+  role?: "admin" | "photographer";
 };
 
 const typeLabelMap = {
@@ -42,7 +43,7 @@ const typeAlbOptions = [
   { value: "Final", name: "CUOI_CUNG" },
 ];
 
-const RecentlyAlbItem = ({ album }: RecentlyAlbItemProps) => {
+const RecentlyAlbItem = ({ album, role = "admin" }: RecentlyAlbItemProps) => {
   const router = useRouter();
 
   // Edit modal state
@@ -154,7 +155,14 @@ const RecentlyAlbItem = ({ album }: RecentlyAlbItemProps) => {
             </p>
           </div>
           <div className="flex items-center gap-[10px] mt-[16px]">
-            <Button variant="sm" href={`/admin/albums/${album.ma_album}`}>
+            <Button
+              variant="sm"
+              href={
+                role === "admin"
+                  ? `/admin/albums/${album.ma_album}`
+                  : `/photographer/albums/${album.ma_album}`
+              }
+            >
               Xem ảnh
             </Button>
             <Button variant="sm" onClick={handleCopyLink}>

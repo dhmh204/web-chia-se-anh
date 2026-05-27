@@ -9,17 +9,41 @@ export const runtime = "nodejs";
 // GET handler to retrieve photos
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { message: "Bạn chưa đăng nhập" },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const ma_du_an = searchParams.get("ma_du_an");
     const ma_album = searchParams.get("ma_album");
 
     const whereClause: any = {};
+    if (session.user.vai_tro === "THO_ANH") {
+      whereClause.album = {
+        du_an: {
+          su_phan_cong: {
+            some: {
+              ma_nguoi_dung: session.user.ma_nguoi_dung,
+            },
+          },
+        },
+      };
+    }
+
     if (ma_album && ma_album !== "all") {
       whereClause.ma_album = ma_album;
     } else if (ma_du_an && ma_du_an !== "all") {
-      whereClause.album = {
-        ma_du_an: ma_du_an,
-      };
+      if (whereClause.album) {
+        whereClause.album.ma_du_an = ma_du_an;
+      } else {
+        whereClause.album = {
+          ma_du_an: ma_du_an,
+        };
+      }
     }
 
     const photos = await prisma.hinhAnh.findMany({
@@ -98,6 +122,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify photographer assignment
+    if (session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền upload ảnh vào album của dự án này" },
+          { status: 403 }
+        );
+      }
+    }
+
     const uploadedPhotos = [];
 
     for (const file of files) {
@@ -167,6 +209,9 @@ export async function PATCH(request: NextRequest) {
 
     const photo = await prisma.hinhAnh.findUnique({
       where: { ma_hinh_anh },
+      include: {
+        album: true,
+      },
     });
 
     if (!photo) {
@@ -174,6 +219,24 @@ export async function PATCH(request: NextRequest) {
         { message: "Hình ảnh không tồn tại" },
         { status: 404 }
       );
+    }
+
+    // Verify photographer assignment
+    if (session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: photo.album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền chỉnh sửa ảnh của dự án này" },
+          { status: 403 }
+        );
+      }
     }
 
     const updateData: any = {};
@@ -228,6 +291,9 @@ export async function DELETE(request: NextRequest) {
 
     const photo = await prisma.hinhAnh.findUnique({
       where: { ma_hinh_anh },
+      include: {
+        album: true,
+      },
     });
 
     if (!photo) {
@@ -235,6 +301,24 @@ export async function DELETE(request: NextRequest) {
         { message: "Hình ảnh không tồn tại" },
         { status: 404 }
       );
+    }
+
+    // Verify photographer assignment
+    if (session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: photo.album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền xóa ảnh của dự án này" },
+          { status: 403 }
+        );
+      }
     }
 
     await prisma.hinhAnh.delete({

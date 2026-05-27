@@ -34,6 +34,10 @@ export type PhotoType = {
     phan_tram_chieu_cao: number;
     ma_tho_anh?: string | null;
     trang_thai: string;
+    tho_anh?: {
+      ho_va_ten: string;
+      vai_tro: string;
+    } | null;
   }[];
 };
 

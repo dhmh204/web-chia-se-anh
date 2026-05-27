@@ -11,6 +11,7 @@ type UsersClientProps = {};
 const UsersClient = () => {
   const [isRunningProcess, setIsRunningProcess] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
+  const [hasError, setHasError] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
@@ -25,6 +26,7 @@ const UsersClient = () => {
 
   const handleStartProcess = async (formData: FormData) => {
     setErrors({});
+    setHasError(false);
     setIsRunningProcess(true);
     setActiveStep(1);
 
@@ -69,6 +71,7 @@ const UsersClient = () => {
             });
             setIsRunningProcess(false);
             setErrors({});
+            setHasError(false);
           } else if (parsed.type === "error") {
             throw new Error(parsed.message);
           }
@@ -92,6 +95,7 @@ const UsersClient = () => {
         toastNotify.error("Lỗi tạo tài khoản", message);
       }
       setErrors(newErrors);
+      setHasError(true);
       setIsRunningProcess(false);
       setActiveStep(1);
     }
@@ -108,6 +112,7 @@ const UsersClient = () => {
         isProcessing={isRunningProcess}
         errors={errors}
         clearError={clearError}
+        hasError={hasError}
       />
 
       <AccountProcessPanel

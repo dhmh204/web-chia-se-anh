@@ -53,6 +53,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.ma_nguoi_dung = user.id;
         token.vai_tro = (user as any).role;
+        token.name = user.name;
+        token.email = user.email;
       }
 
       return token;
@@ -62,6 +64,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.ma_nguoi_dung = token.ma_nguoi_dung;
         session.user.vai_tro = token.vai_tro;
+        session.user.name = token.name;
+        session.user.email = token.email;
       }
 
       return session;

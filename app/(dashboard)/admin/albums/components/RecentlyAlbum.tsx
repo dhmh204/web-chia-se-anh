@@ -6,10 +6,11 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 type RecentlyAlbumProps = {
   albums?: AlbumWithProject[];
+  role?: "admin" | "photographer";
 };
 
 
-const RecentlyAlbum = ({ albums }: RecentlyAlbumProps) => {
+const RecentlyAlbum = ({ albums, role = "admin" }: RecentlyAlbumProps) => {
   const displayAlbums = albums || [];
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -91,7 +92,7 @@ const RecentlyAlbum = ({ albums }: RecentlyAlbumProps) => {
             >
               {pageItems.map((album) => (
                 <div key={album.ma_album} className="h-full">
-                  <RecentlyAlbItem album={album} />
+                  <RecentlyAlbItem album={album} role={role} />
                 </div>
               ))}
               {/* Pad last page if there are fewer than 3 items to preserve grid spacing */}

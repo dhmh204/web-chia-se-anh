@@ -236,7 +236,11 @@ const PhotoDetailsModal = ({
                     >
                       <div className="flex justify-between items-center border-b border-white/5 pb-1 mb-1">
                         <strong className="text-[11.5px] text-white truncate max-w-[100px]">
-                          {fb.nguoi_binh_luan}
+                          {fb.tho_anh?.vai_tro === "THO_ANH"
+                            ? fb.tho_anh.ho_va_ten
+                            : fb.tho_anh?.vai_tro === "ADMIN"
+                            ? "Quản trị viên"
+                            : fb.nguoi_binh_luan}
                         </strong>
                         <span className="text-[9px] text-slate-500">
                           {new Date(fb.ngay_tao).toLocaleDateString("vi-VN")}
@@ -385,13 +389,21 @@ const PhotoDetailsModal = ({
                         <div className="flex justify-between items-center mb-1">
                           <div className="flex items-center gap-1.5">
                             <strong className="text-[#34d399]">
-                              {fb.nguoi_binh_luan}
+                              {fb.tho_anh?.vai_tro === "THO_ANH"
+                                ? fb.tho_anh.ho_va_ten
+                                : fb.tho_anh?.vai_tro === "ADMIN"
+                                ? "Quản trị viên"
+                                : fb.nguoi_binh_luan}
                             </strong>
-                            {fb.ma_tho_anh && (
+                            {fb.tho_anh?.vai_tro === "THO_ANH" ? (
                               <span className="bg-emerald-950/80 border border-emerald-900/30 text-emerald-400 font-bold text-[8.5px] uppercase px-1.5 py-0.5 rounded">
                                 Thợ ảnh
                               </span>
-                            )}
+                            ) : fb.tho_anh?.vai_tro === "ADMIN" ? (
+                              <span className="bg-blue-950/80 border border-blue-900/30 text-blue-400 font-bold text-[8.5px] uppercase px-1.5 py-0.5 rounded">
+                                Admin
+                              </span>
+                            ) : null}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10.5px] text-[var(--muted)]">

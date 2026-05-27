@@ -4,9 +4,10 @@ import TableAssignedProjects from "./TableAssignedProjects";
 
 type props = {
   isDetails?: boolean;
+  projects?: any[];
 };
 
-const AssignedProjects = ({ isDetails = false }: props) => {
+const AssignedProjects = ({ isDetails = false, projects = [] }: props) => {
   return (
     <Panel
       kicker="Dự án của tôi"
@@ -16,7 +17,7 @@ const AssignedProjects = ({ isDetails = false }: props) => {
       hrefButton={!isDetails ? "/photographer/projects" : undefined}
       download={false}
     >
-      <TableAssignedProjects isDetails={isDetails} />
+      <TableAssignedProjects isDetails={isDetails} projects={projects} />
     </Panel>
   );
 };

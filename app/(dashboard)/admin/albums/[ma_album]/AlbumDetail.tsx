@@ -354,6 +354,7 @@ const AlbumDetail = ({ album, stats: initialStats }: AlbumDetailProps) => {
           phan_tram_chieu_cao: Number(data.feedback.phan_tram_chieu_cao) || 10,
           ma_tho_anh: data.feedback.ma_tho_anh,
           trang_thai: data.feedback.trang_thai || "CHUA_XU_LY",
+          tho_anh: data.feedback.tho_anh,
         };
 
         setPhotos((prev) =>

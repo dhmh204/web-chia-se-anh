@@ -11,6 +11,7 @@ type CreateUserProps = {
     password?: string;
   };
   clearError: (field: "name" | "email" | "password") => void;
+  hasError: boolean;
 };
 
 const CreateUser = ({
@@ -18,6 +19,7 @@ const CreateUser = ({
   isProcessing,
   errors,
   clearError,
+  hasError,
 }: CreateUserProps) => {
   return (
     <Panel
@@ -30,6 +32,7 @@ const CreateUser = ({
         isProcessing={isProcessing}
         errors={errors}
         clearError={clearError}
+        hasError={hasError}
       />
     </Panel>
   );

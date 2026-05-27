@@ -48,12 +48,14 @@ type FormCreateUseProps = {
     password?: string;
   };
   clearError: (field: "name" | "email" | "password") => void;
+  hasError: boolean;
 };
 const FormCreateUse = ({
   onStartProcess,
   isProcessing,
   errors,
   clearError,
+  hasError,
 }: FormCreateUseProps) => {
   const [hidden, setHidden] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -62,14 +64,13 @@ const FormCreateUse = ({
 
   useEffect(() => {
     if (prevIsProcessing.current && !isProcessing) {
-      const hasErrors = Object.values(errors).some((err) => err !== undefined);
-      if (!hasErrors) {
+      if (!hasError) {
         formRef.current?.reset();
         setAvatarPreview(null);
       }
     }
     prevIsProcessing.current = isProcessing;
-  }, [isProcessing, errors]);
+  }, [isProcessing, hasError]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

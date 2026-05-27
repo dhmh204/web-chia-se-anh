@@ -48,6 +48,12 @@ export default async function CustomerAlbumDetailPage({ params }: PageProps) {
               phan_tram_chieu_rong: true,
               phan_tram_chieu_cao: true,
               ma_tho_anh: true,
+              tho_anh: {
+                select: {
+                  ho_va_ten: true,
+                  vai_tro: true,
+                },
+              },
             },
           },
         },
@@ -129,6 +135,7 @@ export default async function CustomerAlbumDetailPage({ params }: PageProps) {
         phan_tram_chieu_rong: Number(f.phan_tram_chieu_rong),
         phan_tram_chieu_cao: Number(f.phan_tram_chieu_cao),
         ma_tho_anh: f.ma_tho_anh,
+        tho_anh: f.tho_anh,
       })),
     })),
     khuon_mat: album.khuon_mat.map((face) => ({

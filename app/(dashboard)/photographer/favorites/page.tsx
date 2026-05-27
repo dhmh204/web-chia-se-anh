@@ -1,11 +1,25 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
-import PhotosClient from "./components/PhotosClient";
+import PhotosClient from "../../admin/photos/components/PhotosClient";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
-const PhotoPage = async () => {
+const PhotographerFavoritesPage = async () => {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    redirect("/login");
+  }
+
+  // 1. Fetch photographer's projects
   const projects = await prisma.duan.findMany({
+    where: {
+      su_phan_cong: {
+        some: { ma_nguoi_dung: session.user.ma_nguoi_dung },
+      },
+    },
     orderBy: {
       ten_du_an: "asc",
     },
@@ -15,7 +29,15 @@ const PhotoPage = async () => {
     },
   });
 
+  // 2. Fetch photographer's albums
   const albums = await prisma.album.findMany({
+    where: {
+      du_an: {
+        su_phan_cong: {
+          some: { ma_nguoi_dung: session.user.ma_nguoi_dung },
+        },
+      },
+    },
     orderBy: {
       ten_alb: "asc",
     },
@@ -27,7 +49,18 @@ const PhotoPage = async () => {
     },
   });
 
+  // 3. Fetch photographer's photos (can fetch all, but pre-filter to only favorites or just let PhotosClient show them)
+  // Let's fetch all photos and pre-select the favorites tab so they can see all options but start on favorites!
   const photos = await prisma.hinhAnh.findMany({
+    where: {
+      album: {
+        du_an: {
+          su_phan_cong: {
+            some: { ma_nguoi_dung: session.user.ma_nguoi_dung },
+          },
+        },
+      },
+    },
     orderBy: {
       ngay_tao: "desc",
     },
@@ -105,8 +138,9 @@ const PhotoPage = async () => {
       initialPhotos={photosData}
       projects={projects}
       albums={albums as any}
+      initialTab="favorites"
     />
   );
 };
 
-export default PhotoPage;
+export default PhotographerFavoritesPage;

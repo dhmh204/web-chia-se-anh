@@ -16,6 +16,7 @@ type SelectCustomProps = {
   onHiddenChange?: (hidden: boolean) => void;
   value?: string;
   onChange?: (value: string) => void;
+  disabled?: boolean;
 };
 
 const SelectCustom = ({
@@ -25,6 +26,7 @@ const SelectCustom = ({
   onHiddenChange,
   value,
   onChange,
+  disabled = false,
 }: SelectCustomProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<SelectOption | null>(() => {
@@ -89,8 +91,9 @@ const SelectCustom = ({
           type="button"
           className="w-full h-[48px] px-[16px] border border-[var(--line)] rounded-[15px] bg-[var(--field-bg)] text-[var(--text)] 
           flex items-center justify-between cursor-pointer transition-all duration-200 hover:border-[var(--line-green)] hover:shadow-[0_0_0_4px_rgba(16,185,129,0.08)] text-[14px]
-          focus:border-[var(--line-green)] focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
-          onClick={() => setIsOpen(!isOpen)}
+          focus:border-[var(--line-green)] focus:shadow-[0_0_0_4px_rgba(16,185,129,0.08)] disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
         >
           <span>{selected?.value || "Chọn..."}</span>
           <IoMdArrowDropdown

@@ -47,6 +47,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify photographer assignment
+    if (session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền tạo album cho dự án này" },
+          { status: 403 },
+        );
+      }
+    }
+
     // Create Album in DB
     const newAlbum = await prisma.album.create({
       data: {
@@ -104,6 +122,24 @@ export async function PATCH(request: NextRequest) {
         { message: "Album không tồn tại" },
         { status: 404 },
       );
+    }
+
+    // Verify photographer assignment
+    if (session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền chỉnh sửa album của dự án này" },
+          { status: 403 },
+        );
+      }
     }
 
     const updateData: any = {};
@@ -169,6 +205,24 @@ export async function DELETE(request: NextRequest) {
         { message: "Album không tồn tại" },
         { status: 404 },
       );
+    }
+
+    // Verify photographer assignment
+    if (session.user.vai_tro === "THO_ANH") {
+      const assignment = await prisma.suPhanCong.findUnique({
+        where: {
+          ma_nguoi_dung_ma_du_an: {
+            ma_nguoi_dung: session.user.ma_nguoi_dung as string,
+            ma_du_an: album.ma_du_an,
+          },
+        },
+      });
+      if (!assignment) {
+        return NextResponse.json(
+          { message: "Bạn không có quyền xóa album của dự án này" },
+          { status: 403 },
+        );
+      }
     }
 
     await prisma.album.delete({
